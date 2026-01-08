@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - FuelShare</title>
+    <style>
+        /* ========== GLOBAL STYLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ========== CONTAINER ========== */
+        .container {
+            background: white;
+            max-width: 450px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 15px;
+            opacity: 0.95;
+        }
+
+        /* ========== FORM SECTION ========== */
+        .form-section {
+            padding: 40px 30px;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-text h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        label .required {
+            color: #f44336;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        /* Password input with toggle button */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #666;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            color: #2196f3;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        input.error {
+            border-color: #f44336;
+        }
+
+        input.success {
+            border-color: #4caf50;
+        }
+
+        /* ========== ERROR MESSAGES ========== */
+        .error-message {
+            color: #f44336;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* ========== CHECKBOX (Remember Me) ========== */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 400;
+            cursor: pointer;
+            color: #555;
+        }
+
+        /* ========== FORGOT PASSWORD LINK ========== */
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 25px;
+        }
+
+        .forgot-password a {
+            color: #2196f3;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password a:hover {
+            color: #1565c0;
+            text-decoration: underline;
+        }
+
+        /* ========== BUTTON ========== */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ========== FOOTER LINKS ========== */
+        .footer-links {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .footer-links p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .footer-links a {
+            color: #2196f3;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* ========== SUCCESS MESSAGE ========== */
+        .success-message {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideDown 0.4s ease;
+        }
+
+        .success-message p {
+            color: #2e7d32;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        /* ========== DIVIDER ========== */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .divider span {
+            padding: 0 15px;
+            color: #999;
+            font-size: 13px;
+        }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========== RESPONSIVE DESIGN ========== */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 30px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+
+            .form-section {
+                padding: 30px 20px;
+            }
+
+            .welcome-text h2 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .header {
+                padding: 30px 15px;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .checkbox-group {
+                font-size: 13px;
+            }
+
+            .forgot-password a {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🚗 FuelShare</h1>
+            <p>Share rides. Save fuel. Travel smarter.</p>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <!-- Welcome Text -->
+            <div class="welcome-text">
+                <h2>Welcome Back!</h2>
+                <p>Login to continue your journey</p>
+            </div>
+
+            <!-- Success Message (Hidden by default) -->
+            <div id="successMessage" class="success-message">
+                <p>✓ Login successful! Redirecting to dashboard...</p>
+            </div>
+
+            <form id="loginForm" novalidate>
+                <!-- Email Address -->
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="Enter your email"
+                        autocomplete="email">
+                    <span class="error-message" id="emailError">Please enter a valid email address</span>
+                </div>
+
+                <!-- Password with Show/Hide Toggle -->
+                <div class="form-group">
+                    <label for="password">Password <span class="required">*</span></label>
+                    <div class="password-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Enter your password"
+                            autocomplete="current-password">
+                        <button 
+                            type="button" 
+                            class="toggle-password" 
+                            id="togglePassword"
+                            aria-label="Toggle password visibility">
+                            👁️
+                        </button>
+                    </div>
+                    <span class="error-message" id="passwordError">Please enter your password</span>
+                </div>
+
+                <!-- Remember Me & Forgot Password Row -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div class="checkbox-group" style="margin-bottom: 0;">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <label for="rememberMe">Remember me</label>
+                    </div>
+                    <div class="forgot-password" style="margin-bottom: 0;">
+                        <a href="#">Forgot Password?</a>
+                    </div>
+                </div>
+
+                <!-- Login Button -->
+                <button type="submit" class="btn-primary" id="loginButton">Login</button>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <!-- Footer Links -->
+                <div class="footer-links">
+                    <p>New user? <a href="#">Create an account</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ========== FORM ELEMENTS ==========
+        const form = document.getElementById('loginForm');
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const rememberMe = document.getElementById('rememberMe');
+        const loginButton = document.getElementById('loginButton');
+        const successMessage = document.getElementById('successMessage');
+
+        // ========== PASSWORD VISIBILITY TOGGLE ==========
+        togglePassword.addEventListener('click', function() {
+            // Toggle password field type
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // Toggle icon
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+
+        // ========== VALIDATION FUNCTIONS ==========
+        
+        // Show error message
+        function showError(errorId, inputElement) {
+            const errorElement = document.getElementById(errorId);
+            errorElement.classList.add('show');
+            if (inputElement) {
+                inputElement.classList.add('error');
+                inputElement.classList.remove('success');
+            }
+        }
+
+        // Hide error message
+        function hideError(errorId, inputElement) {
+            const errorElement = document.getElementById(errorId);
+            errorElement.classList.remove('show');
+            if (inputElement) {
+                inputElement.classList.remove('error');
+                inputElement.classList.add('success');
+            }
+        }
+
+        // Validate Email
+        function validateEmail() {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const emailValue = email.value.trim();
+            
+            if (emailValue === '') {
+                document.getElementById('emailError').textContent = 'Email address is required';
+                showError('emailError', email);
+                return false;
+            }
+            
+            if (!emailPattern.test(emailValue)) {
+                document.getElementById('emailError').textContent = 'Please enter a valid email address';
+                showError('emailError', email);
+                return false;
+            }
+            
+            hideError('emailError', email);
+            return true;
+        }
+
+        // Validate Password
+        function validatePassword() {
+            const passwordValue = password.value;
+            
+            if (passwordValue === '') {
+                document.getElementById('passwordError').textContent = 'Password is required';
+                showError('passwordError', password);
+                return false;
+            }
+            
+            hideError('passwordError', password);
+            return true;
+        }
+
+        // ========== REAL-TIME VALIDATION ==========
+        email.addEventListener('blur', validateEmail);
+        password.addEventListener('blur', validatePassword);
+
+        // Clear error on input
+        email.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                hideError('emailError', email);
+            }
+        });
+
+        password.addEventListener('input', function() {
+            if (this.value !== '') {
+                hideError('passwordError', password);
+            }
+        });
+
+        // ========== FORM SUBMISSION ==========
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Validate all fields
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+
+            // Check if all validations passed
+            if (isEmailValid && isPasswordValid) {
+                // Disable button to prevent double submission
+                loginButton.disabled = true;
+                loginButton.textContent = 'Logging in...';
+
+                // Show success message
+                successMessage.classList.add('show');
+                
+                // Hide form
+                form.style.opacity = '0.6';
+                form.style.pointerEvents = 'none';
+
+                // ========== BACKEND AUTHENTICATION PLACEHOLDER ==========
+                // TODO: Implement actual backend authentication here
+                // Example:
+                /*
+                const loginData = {
+                    email: email.value.trim(),
+                    password: password.value,
+                    rememberMe: rememberMe.checked
+                };
+
+                fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(loginData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Store authentication token
+                        localStorage.setItem('authToken', data.token);
+                        
+                        // Redirect to dashboard
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 1500);
+                    } else {
+                        // Handle login error
+                        alert('Invalid credentials. Please try again.');
+                        loginButton.disabled = false;
+                        loginButton.textContent = 'Login';
+                        form.style.opacity = '1';
+                        form.style.pointerEvents = 'auto';
+                        successMessage.classList.remove('show');
+                    }
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    alert('An error occurred. Please try again.');
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Login';
+                    form.style.opacity = '1';
+                    form.style.pointerEvents = 'auto';
+                    successMessage.classList.remove('show');
+                });
+                */
+
+                // Simulate successful login (for demonstration)
+                setTimeout(() => {
+                    console.log('Login Data:', {
+                        email: email.value.trim(),
+                        password: '********', // Never log actual passwords
+                        rememberMe: rememberMe.checked
+                    });
+                    
+                    // Uncomment below for actual redirect
+                    // window.location.href = '/dashboard';
+                    
+                    // For demo: reset form after 3 seconds
+                    setTimeout(() => {
+                        form.reset();
+                        loginButton.disabled = false;
+                        loginButton.textContent = 'Login';
+                        form.style.opacity = '1';
+                        form.style.pointerEvents = 'auto';
+                        successMessage.classList.remove('show');
+                        email.classList.remove('success');
+                        password.classList.remove('success');
+                    }, 3000);
+                }, 1500);
+            } else {
+                // Scroll to first error
+                const firstError = document.querySelector('.error-message.show');
+                if (firstError) {
+                    firstError.parentElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+            }
+        });
+
+        // ========== REMEMBER ME FUNCTIONALITY (UI ONLY) ==========
+        // TODO: Implement actual remember me logic with backend
+        // This checkbox is for UI demonstration only
+        // In production, you would:
+        // 1. Send rememberMe status to backend on login
+        // 2. Backend generates longer-lasting session token if checked
+        // 3. Store token in localStorage or cookie based on rememberMe value
+        
+        rememberMe.addEventListener('change', function() {
+            console.log('Remember Me:', this.checked);
+            // Backend integration would happen here
+        });
+
+        // ========== KEYBOARD ACCESSIBILITY ==========
+        // Allow Enter key to submit form
+        email.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                password.focus();
+            }
+        });
+
+        password.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>
