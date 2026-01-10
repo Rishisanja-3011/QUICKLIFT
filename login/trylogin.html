@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In | RideShare</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    background:#020617;
+    color:#fff;
+}
+
+/* ===== Layout ===== */
+.container{
+    display:flex;
+    min-height:100vh;
+}
+
+/* ===== Video Side ===== */
+.video-side{
+    flex:1;
+    position:relative;
+    overflow:hidden;
+}
+
+.video-side video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    opacity:1;
+    transition:opacity 1s ease-in-out;
+}
+
+.video-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+}
+
+.video-text{
+    position:absolute;
+    bottom:60px;
+    left:60px;
+    max-width:420px;
+}
+
+.video-text h2{
+    font-size:38px;
+    font-weight:700;
+    line-height:1.2;
+}
+
+.video-text p{
+    margin-top:12px;
+    font-size:16px;
+    opacity:0.85;
+}
+
+/* ===== Form Side ===== */
+.form-side{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px;
+}
+
+/* ===== Login Card ===== */
+.auth-card{
+    width:100%;
+    max-width:420px;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px;
+    padding:36px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* ===== Brand ===== */
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:26px;
+}
+
+.brand-logo{
+    width:42px;
+    height:42px;
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+}
+
+.brand h1{
+    font-size:22px;
+    font-weight:700;
+}
+
+/* ===== Header ===== */
+.header h2{
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.header p{
+    font-size:14px;
+    color:rgba(255,255,255,0.7);
+    margin-bottom:22px;
+}
+
+/* ===== Inputs ===== */
+.form-group{
+    margin-bottom:18px;
+}
+
+label{
+    font-size:13px;
+    margin-bottom:6px;
+    display:block;
+    color:rgba(255,255,255,0.85);
+}
+
+input{
+    width:100%;
+    padding:14px 16px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.08);
+    color:#fff;
+    font-size:14px;
+}
+
+input::placeholder{
+    color:rgba(255,255,255,0.4);
+}
+
+input:focus{
+    outline:none;
+    border-color:#6366f1;
+    box-shadow:0 0 0 3px rgba(99,102,241,0.2);
+}
+
+/* ===== Password Toggle ===== */
+.password-wrap{
+    position:relative;
+}
+
+.toggle{
+    position:absolute;
+    right:14px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-size:14px;
+    opacity:0.6;
+}
+
+/* ===== Forgot ===== */
+.forgot{
+    text-align:right;
+    margin-bottom:22px;
+}
+
+.forgot a{
+    font-size:13px;
+    color:#818cf8;
+    text-decoration:none;
+}
+
+/* ===== Button ===== */
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    color:white;
+    box-shadow:0 10px 30px rgba(99,102,241,0.4);
+}
+
+button:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+}
+
+/* ===== Alert ===== */
+.alert{
+    display:none;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:18px;
+    font-size:13px;
+}
+
+.success{
+    background:rgba(34,197,94,0.15);
+    color:#22c55e;
+    border:1px solid rgba(34,197,94,0.3);
+}
+
+.error{
+    background:rgba(239,68,68,0.15);
+    color:#ef4444;
+    border:1px solid rgba(239,68,68,0.3);
+}
+
+/* ===== Footer ===== */
+.footer{
+    margin-top:24px;
+    text-align:center;
+    font-size:14px;
+    color:rgba(255,255,255,0.6);
+}
+
+.footer a{
+    color:#818cf8;
+    font-weight:600;
+    text-decoration:none;
+}
+
+/* ===== Mobile ===== */
+@media(max-width:900px){
+    .video-side{
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- LEFT: VIDEO SLIDESHOW -->
+    <div class="video-side">
+        <video id="bgVideo" autoplay muted playsinline></video>
+        <div class="video-overlay"></div>
+        <div class="video-text">
+            <h2>Share the road,<br>not the stress</h2>
+            <p>Reliable rides for everyday commuters</p>
+        </div>
+    </div>
+
+    <!-- RIGHT: LOGIN -->
+    <div class="form-side">
+        <div class="auth-card">
+
+            <div class="brand">
+                <div class="brand-logo">🚗</div>
+                <h1>RideShare</h1>
+            </div>
+
+            <div class="header">
+                <h2>Sign in</h2>
+                <p>Access your account securely</p>
+            </div>
+
+            <div id="alert" class="alert"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email or Username</label>
+                    <input type="text" id="username" placeholder="Enter your email or username" required>
+                </div>
+
+                <div class="form-group password-wrap">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                    <span class="toggle" onclick="togglePassword()">👁</span>
+                </div>
+
+                <div class="forgot">
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button type="submit" id="btn">Sign In</button>
+            </form>
+
+            <div class="footer">
+                Don’t have an account? <a href="register.html">Create one</a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+/* ===== VIDEO SLIDESHOW ===== */
+const videos = [
+    "videos/road1.mp4",
+    "videos/city.mp4",
+    "videos/highway.mp4"
+];
+
+let index = 0;
+const video = document.getElementById("bgVideo");
+
+function playNextVideo(){
+    video.style.opacity = 0;
+
+    setTimeout(()=>{
+        video.src = videos[index];
+        video.load();
+        video.play();
+        video.style.opacity = 1;
+        index = (index + 1) % videos.length;
+    },1000);
+}
+
+video.addEventListener("ended", playNextVideo);
+
+// Start first video
+video.src = videos[index];
+video.play();
+index++;
+
+/* ===== LOGIN LOGIC ===== */
+const form = document.getElementById("loginForm");
+const alertBox = document.getElementById("alert");
+const btn = document.getElementById("btn");
+
+function togglePassword(){
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+}
+
+function showAlert(msg,type){
+    alertBox.className = `alert ${type}`;
+    alertBox.innerText = msg;
+    alertBox.style.display = "block";
+}
+
+form.addEventListener("submit", async e=>{
+    e.preventDefault();
+    btn.disabled = true;
+    btn.innerText = "Signing in...";
+
+    try{
+        const res = await fetch("login.php",{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify({
+                username: username.value,
+                password: password.value
+            })
+        });
+
+        const data = await res.json();
+
+        if(data.success){
+            showAlert("Login successful. Redirecting...","success");
+            setTimeout(()=>location.href="dashboard.html",1000);
+        }else{
+            showAlert("Invalid credentials","error");
+            btn.disabled=false;
+            btn.innerText="Sign In";
+        }
+    }catch{
+        showAlert("Server error. Try again.","error");
+        btn.disabled=false;
+        btn.innerText="Sign In";
+    }
+});
+</script>
+
+</body>
+</html>
