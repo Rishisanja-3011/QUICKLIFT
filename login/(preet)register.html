@@ -418,6 +418,44 @@
                 font-size: 28px;
             }
         }
+        .terms-container {
+    display: flex;
+    align-items: center;       /* fixes vertical alignment */
+    gap: 12px;
+    margin-top: 24px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Make checkbox clearly visible */
+.terms-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    transform: scale(1.2);     /* increases size */
+    accent-color: #667eea;     /* theme blue */
+    cursor: pointer;
+}
+
+/* Align label text properly */
+.terms-container label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+/* Link styling */
+.terms-container a {
+    color: #8b9cf6;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.terms-container a:hover {
+    color: #a78bfa;
+}
+
     </style>
 </head>
 <body>
@@ -534,12 +572,15 @@
                     </div>
                 </div>
 
-                <div class="input-group full-width">
-                    <label class="input-label" style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="terms" name="terms" style="width: auto; margin: 0;">
-                        I agree to the <a href="#" style="color: #667eea; text-decoration: none;">Terms and Conditions</a>
-                    </label>
-                </div>
+       <div class="terms-container">
+    <input type="checkbox" id="terms" required>
+    <label for="terms">
+        I agree to the 
+        <a href="terms.html" target="_blank" style="text-decoration: none;">Terms & Conditions</a>
+    </label>
+</div>
+
+
 
                 <button type="submit" class="register-btn" id="submitBtn">
                     Create Account
