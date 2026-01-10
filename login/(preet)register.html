@@ -534,6 +534,13 @@
                     </div>
                 </div>
 
+                <div class="input-group full-width">
+                    <label class="input-label" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="terms" name="terms" style="width: auto; margin: 0;">
+                        I agree to the <a href="#" style="color: #667eea; text-decoration: none;">Terms and Conditions</a>
+                    </label>
+                </div>
+
                 <button type="submit" class="register-btn" id="submitBtn">
                     Create Account
                 </button>
@@ -614,6 +621,11 @@
 
             if (password.length < 8) {
                 showAlert('Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            if (!document.getElementById('terms').checked) {
+                showAlert('You must agree to the Terms and Conditions', 'error');
                 return;
             }
             
