@@ -1,0 +1,459 @@
+:root {
+    --primary-color: #00aff5;
+    --primary-hover: #008cc3;
+    --secondary-color: #ffffff;
+    --text-color: #2c3e50; /* Softer black */
+    --text-muted: #7f8c8d;
+    --background-color: #f4f6f8; /* Softer gray-blue */
+    --input-bg: #ffffff;
+    --form-bg: #fdfdfd; /* Slightly off-white for form area */
+    --error-color: #e74c3c;
+    --success-color: #2ecc71;
+    --border-radius: 12px;
+    --font-family: 'Poppins', sans-serif;
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Split Screen Layout for Auth */
+.split-screen {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.left-pane {
+    flex: 1;
+    background-image: linear-gradient(135deg, rgba(0, 175, 245, 0.85), rgba(41, 128, 185, 0.9)), url('https://images.unsplash.com/photo-1596422846543-75c6a1976406?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80'); /* Indian Road Trip Vibe */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    padding: 40px;
+    text-align: center;
+    animation: slideInLeft 1s ease-out;
+}
+
+.left-pane h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.left-pane p {
+    font-size: 1.2rem;
+    max-width: 500px;
+    line-height: 1.6;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.right-pane {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8faff; /* Very subtle blue tint, easier on eyes than pure white */
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 500px;
+    background: var(--secondary-color);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+    animation: fadeIn 0.8s ease-out;
+}
+
+.logo-dark {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+    margin-bottom: 30px;
+    display: inline-block;
+}
+
+.logo-dark span {
+    color: var(--text-color);
+}
+
+.auth-header {
+    margin-bottom: 30px;
+}
+
+.auth-header h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.auth-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Modern Form Styling */
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+    animation: fadeIn 0.5s ease-out backwards;
+}
+
+/* Stagger animations for form groups */
+.form-group:nth-child(1) { animation-delay: 0.1s; }
+.form-group:nth-child(2) { animation-delay: 0.2s; }
+.form-group:nth-child(3) { animation-delay: 0.3s; }
+.form-group:nth-child(4) { animation-delay: 0.4s; }
+.form-group:nth-child(5) { animation-delay: 0.5s; }
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e1e4e8;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    font-family: var(--font-family);
+    transition: all 0.3s ease;
+    background-color: #fcfcfc; /* Off-white input bg */
+    color: #333;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(0, 175, 245, 0.1);
+    transform: translateY(-1px);
+}
+
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+.file-input-wrapper {
+    position: relative;
+    border: 2px dashed #dce1e6;
+    border-radius: var(--border-radius);
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+.file-input-wrapper:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(0, 175, 245, 0.05);
+}
+
+.file-input-wrapper input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+    margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(0, 175, 245, 0.3);
+    animation: fadeIn 0.6s ease-out 0.6s backwards;
+}
+
+.btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 175, 245, 0.4);
+}
+
+.auth-footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    animation: fadeIn 0.8s ease-out 0.8s backwards;
+}
+
+.auth-footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Alert Styling */
+.alert {
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+    display: none;
+    border-left: 4px solid transparent;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.alert-error {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border-left-color: #b91c1c;
+}
+
+.alert-success {
+    background-color: #ecfdf5;
+    color: #047857;
+    border-left-color: #047857;
+}
+
+/* OTP Input */
+.otp-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.otp-input {
+    width: 55px;
+    height: 65px;
+    text-align: center;
+    font-size: 1.5rem;
+    border: 1px solid #e1e4e8;
+    border-radius: var(--border-radius);
+    background-color: #fcfcfc;
+    transition: all 0.2s;
+}
+
+.otp-input:focus {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .split-screen {
+        flex-direction: column-reverse; /* Form first, then Trust info at bottom */
+    }
+    
+    .left-pane {
+        display: flex;
+        min-height: auto;
+        padding: 40px 20px;
+    }
+
+    .trust-content h1 {
+        font-size: 1.8rem;
+    }
+    
+    .stats-row {
+        justify-content: center;
+    }
+
+    .testimonial-box {
+        display: none; /* Hide testimonial on mobile to save scrolling space */
+    }
+    
+    .right-pane {
+        padding: 20px;
+        background-color: #fff;
+    }
+    
+    .auth-container {
+        box-shadow: none;
+        padding: 20px 0;
+    }
+}
+
+/* Trust Content in Left Pane */
+.trust-content {
+    max-width: 500px;
+    text-align: left;
+    color: #fff;
+}
+
+.trust-content h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.trust-content p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    margin-bottom: 40px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    max-width: 100%;
+}
+
+.stats-row {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.stat-item h3 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-item span {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.testimonial-box {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 16px;
+    margin-bottom: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.8s ease-out 0.3s backwards;
+}
+
+.testimonial-box p {
+    font-size: 1.05rem;
+    font-style: italic;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    text-shadow: none;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-circle {
+    width: 45px;
+    height: 45px;
+    background-color: #fff;
+    color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.user-details strong {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.user-details span {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.active-users {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 0.9rem;
+    animation: fadeIn 0.8s ease-out 0.6s backwards;
+}
+
+.user-pile {
+    display: flex;
+}
+
+.user-pile div {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.8);
+    margin-left: -12px;
+    background-color: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #555;
+    font-weight: 600;
+    background-size: cover;
+    background-position: center;
+}
+
+.user-pile div:first-child {
+    margin-left: 0;
+}
+
+/* Simulated avatars colors */
+.bg-1 { background-color: #ffadad !important; color: #fff !important; }
+.bg-2 { background-color: #ffd6a5 !important; color: #fff !important; }
+.bg-3 { background-color: #fdffb6 !important; color: #333 !important; }
+.bg-4 { background-color: #caffbf !important; color: #333 !important; }
+

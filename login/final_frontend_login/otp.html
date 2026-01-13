@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - TripShare</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-card">
+            <a href="index.html" class="logo">Trip<span>Share</span></a>
+            
+            <div class="auth-header">
+                <h2>Verify Email</h2>
+                <p>Enter the 4-digit code sent to your email</p>
+            </div>
+
+            <div id="alertMessage" class="alert"></div>
+
+            <form id="otpForm">
+                <div class="otp-container">
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                </div>
+
+                <button type="submit" class="btn">Verify Account</button>
+            </form>
+
+            <div class="auth-links">
+                Didn't receive the code? <a href="#" id="resendOtp">Resend</a>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <a href="login.html" class="btn-secondary" style="display:inline-block; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; text-decoration:none;">Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - TripShare</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="split-screen">
+        <div class="left-pane">
+            <div class="trust-content">
+                <h1>Welcome Back to India's Trusted Carpool</h1>
+                <p>Join 200,000+ travelers saving money and making friends every day.</p>
+                
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <h3>2M+</h3>
+                        <span>Rides Shared</span>
+                    </div>
+                    <div class="stat-item">
+                        <h3>4.9</h3>
+                        <span>App Rating</span>
+                    </div>
+                </div>
+
+                <div class="testimonial-box">
+                    <p>"I travel from Pune to Mumbai every weekend. TripShare is safer and cheaper than any bus. Highly recommended!"</p>
+                    <div class="user-info">
+                        <div class="avatar-circle">P</div>
+                        <div class="user-details">
+                            <strong>Priya Sharma</strong>
+                            <span>Verified User • Pune</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="active-users">
+                     <div class="user-pile">
+                         <div class="bg-1">A</div>
+                         <div class="bg-2">R</div>
+                         <div class="bg-3">S</div>
+                         <div class="bg-4">+99</div>
+                     </div>
+                     <span>1,200+ people online now</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-pane">
+            <div class="auth-container">
+                <a href="index.html" class="logo-dark">Trip<span>Share</span></a>
+                
+                <div class="auth-header">
+                    <h2>Log In</h2>
+                    <p>Welcome back! Please enter your details.</p>
+                </div>
+
+                <div id="alertMessage" class="alert"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" class="form-control" placeholder="e.g. rahul_v" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+
+                    <div style="text-align: right; margin-bottom: 25px;">
+                        <a href="forgot-password.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn">Log In</button>
+                </form>
+
+                <div class="auth-footer">
+                    Don't have an account? <a href="register.html">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
