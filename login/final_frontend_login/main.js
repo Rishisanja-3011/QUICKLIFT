@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Register Logic ---
+    /*
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         // File input name display
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         registerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+           // e.preventDefault();
             const fullname = document.getElementById('fullname').value;
             const username = document.getElementById('username').value;
             const email = document.getElementById('email').value;
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'otp.html';
             }, 2000);
         });
-    }
+    }*/
 
     // --- OTP Logic ---
     const otpForm = document.getElementById('otpForm');
