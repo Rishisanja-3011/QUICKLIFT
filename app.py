@@ -17,11 +17,15 @@ cursor = db.cursor()
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+#login////////
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if not username or not password:
+            return render_template('login.html',error="All Fields required to be filled ")
         query = "SELECT * FROM userdata WHERE username=%s AND passwords=%s"
         values = (username, password)
         cursor.execute(query, values)
@@ -32,20 +36,27 @@ def login():
             return render_template('login.html', error="Invalid credentials")
     return render_template('login.html')
 
+#register
+#=====================================================================
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         # 1. Collect data from form
-        fullname = request.form['fullname']
-        username = request.form['username']
-        email = request.form['email']
-        contact = request.form['contact']
-        city = request.form['city']
-        password = request.form['password']
-        gender = request.form['gender']
+        fullname = request.form.get('fullname')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        contact = request.form.get('contact')
+        city = request.form.get('city')
+        password = request.form.get('password')
+        gender = request.form.get('gender')
+        file = request.files.get('file')
         
+        #empty field check
+        if not all([fullname, username, email, contact, city, password, gender,file]):
+            return render_template('register.html', error="Please fill in all the fields")
+
         # 2. Handle the file
-        file = request.files['file']
+        
         if file:
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
             file_path = file.filename
@@ -64,7 +75,8 @@ def register():
 
     # This only runs for GET requests (opening the page)
     return render_template('register.html')
-
+#dashboard
+#==========================================================
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')

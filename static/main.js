@@ -16,41 +16,41 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Login Logic ---
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const btn = loginForm.querySelector('button');
+    // const loginForm = document.getElementById('loginForm');
+    // if (loginForm) {
+    //     loginForm.addEventListener('submit', (e) => {
+    //        // e.preventDefault();
+    //         const username = document.getElementById('username').value;
+    //         const password = document.getElementById('password').value;
+    //         const btn = loginForm.querySelector('button');
 
-            // Basic validation
-            if (!username || !password) {
-                showAlert('Please fill in all fields');
-                return;
-            }
+    //         // Basic validation
+    //         if (!username || !password) {
+    //             showAlert('Please fill in all fields');
+    //             return;
+    //         }
 
-            // Simulate API call
-            btn.textContent = 'Logging in...';
-            btn.disabled = true;
+    //         // Simulate API call
+    //         btn.textContent = 'Logging in...';
+    //         btn.disabled = true;
 
-            setTimeout(() => {
-                // Mock login success
-                const user = {
-                    username: username,
-                    email: 'mock@example.com', // Placeholder since we logged in with username
-                    name: username, 
-                    token: 'mock-jwt-token-123'
-                };
+    //         setTimeout(() => {
+    //             // Mock login success
+    //             const user = {
+    //                 username: username,
+    //                 email: 'mock@example.com', // Placeholder since we logged in with username
+    //                 name: username, 
+    //                 token: 'mock-jwt-token-123'
+    //             };
                 
-                localStorage.setItem('tripShareUser', JSON.stringify(user));
-                window.location.href = 'dashboard.html';
-            }, 1500);
-        });
-    }
+    //             localStorage.setItem('tripShareUser', JSON.stringify(user));
+    //             window.location.href = 'dashboard.html';
+    //         }, 1500);
+    //     });
+    // }
 
     // --- Register Logic ---
-    /*
+    
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         // File input name display
@@ -108,12 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('tempRegisterUser', JSON.stringify(tempUser));
                 
                 // Simulate sending OTP
-                console.log('OTP Sent: 1234'); 
+                // console.log('OTP Sent: 1234'); 
                 
-                window.location.href = 'otp.html';
+                // window.location.href = 'otp.html';
             }, 2000);
         });
-    }*/
+    }
 
     // --- OTP Logic ---
     const otpForm = document.getElementById('otpForm');
