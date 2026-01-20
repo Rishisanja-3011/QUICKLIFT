@@ -27,4 +27,4 @@ query = """CREATE TABLE IF NOT EXISTS userdata (
 cursor.execute(query)
 db.commit()
 
-print("DATABase banni gyo choduuu")
+print("DATABASE BAAN K TAYAR HO CHUKAA HEE , KRUPIYA SQL WORKBENCH MEIN JAA K CHECK KAREIN")
