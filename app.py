@@ -14,8 +14,9 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 # Configuration for file uploads
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 #login////////
 
@@ -24,6 +25,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        #validation for empty fields
         if not username or not password:
             return render_template('login.html',error="All Fields required to be filled ")
         query = "SELECT * FROM userdata WHERE username=%s AND passwords=%s"
@@ -48,13 +50,17 @@ def register():
         contact = request.form.get('contact')
         city = request.form.get('city')
         password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
         gender = request.form.get('gender')
         file = request.files.get('file')
         
         #empty field check
-        if not all([fullname, username, email, contact, city, password, gender,file]):
+        if not all([fullname, username, email, contact, city, password,confirm_password, gender,file]):
             return render_template('register.html', error="Please fill in all the fields")
 
+        #password match check
+        if password != confirm_password:
+            return render_template('register.html', error="Passwords do not match")
         # 2. Handle the file
         
         if file:
