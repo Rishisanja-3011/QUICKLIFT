@@ -4,76 +4,184 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - TripShare</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .navbar {
-            background-color: white;
-            padding: 15px 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        /* Dashboard Specific Styles */
+        .dash-header {
+            background: white;
+            padding: 15px 50px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
+            box-shadow: var(--shadow-soft);
         }
-        .main-content {
-            margin-top: 80px;
-            padding: 30px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            width: 100%;
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { 
+            text-decoration: none; 
+            color: var(--text-color); 
+            font-weight: 500; 
+            transition: 0.3s;
         }
-        .card {
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-color); }
+        
+        .hero-search {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .search-container {
             background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 50px;
+            display: flex;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            margin-top: 20px;
+            position: relative;
         }
+
+        .search-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            border-right: 1px solid #eee;
+            position: relative;
+        }
+
+        .search-box:last-of-type { border-right: none; }
+
+        .search-box i { color: var(--primary-color); margin-right: 10px; }
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 1rem;
+            font-family: 'Poppins';
+        }
+
+        .btn-search {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* Suggestion Dropdown Styling */
+        .suggestions {
+            position: absolute;
+            top: 110%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+            color: #333;
+            text-align: left;
+        }
+        .sugg-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #f8f8f8; }
+        .sugg-item:hover { background: #f0faff; }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="#" class="logo">Trip<span>Share</span></a>
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <span id="userEmailDisplay" style="font-weight: 500;">user@example.com</span>
-            <button id="logoutBtn" class="btn" style="padding: 8px 20px; width: auto; font-size: 0.9rem;">Logout</button>
-        </div>
-    </nav>
 
-    <div class="main-content">
-        <div class="card">
-            <h2>Welcome to your Dashboard</h2>
-            <p style="color: var(--text-muted); margin-top: 10px;">You are now logged in. This is a placeholder for the Ride Management and Booking modules.</p>
-        </div>
-
-        <div class="card">
-            <h3>Quick Actions</h3>
-            <div style="display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
-                <button class="btn" style="width: auto; background-color: var(--success-color);">Publish a Ride</button>
-                <button class="btn" style="width: auto;">Find a Ride</button>
+    <header class="dash-header">
+        <a href="#" class="logo-dark" style="margin-bottom:0">Trip<span>Share</span></a>
+        <nav class="nav-links">
+            <a href="#" class="active"><i class="fas fa-search"></i> Find a Ride</a>
+            <a href="#"><i class="fas fa-plus-circle"></i> Publish a Ride</a>
+            <a href="#"><i class="fas fa-history"></i> My Rides</a>
+            <div class="user-info">
+                <div class="avatar-circle" style="width:35px; height:35px; font-size: 0.9rem;">U</div>
             </div>
-        </div>
-    </div>
+        </nav>
+    </header>
 
-    <script src="/static/main.js"></script>
+    <section class="hero-search">
+        <h1>Your pick of rides at low prices</h1>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-circle-notch"></i>
+                <input type="text" id="from_loc" placeholder="Leaving from..." autocomplete="off">
+                <div id="from-results" class="suggestions"></div>
+            </div>
+
+            <div class="search-box">
+                <i class="fas fa-map-marker-alt"></i>
+                <input type="text" id="to_loc" placeholder="Going to..." autocomplete="off">
+                <div id="to-results" class="suggestions"></div>
+            </div>
+
+            <div class="search-box" style="flex: 0.5;">
+                <i class="fas fa-calendar-alt"></i>
+                <input type="date" id="travel_date">
+            </div>
+
+            <button class="btn-search">Search</button>
+        </div>
+    </section>
+
+    <main style="padding: 50px; text-align: center;">
+        <h3 style="color: var(--text-muted);">Recent Rides in India</h3>
+        </main>
+
     <script>
-        // Simple session check
-        document.addEventListener('DOMContentLoaded', () => {
-            const user = localStorage.getItem('tripShareUser');
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                document.getElementById('userEmailDisplay').textContent = JSON.parse(user).email;
+        // Photon API Integration for All-India Search
+        function initAutocomplete(inputId, resultsId) {
+            const input = document.getElementById(inputId);
+            const resBox = document.getElementById(resultsId);
+
+            input.addEventListener('input', async () => {
+                const val = input.value;
+                if (val.length < 3) { resBox.style.display = 'none'; return; }
+
+                const resp = await fetch(`https://photon.komoot.io/api/?q=${val}&limit=5&bbox=68.1,7.9,97.4,35.5`);
+                const data = await resp.json();
+
+                resBox.innerHTML = '';
+                if (data.features.length > 0) {
+                    resBox.style.display = 'block';
+                    data.features.forEach(f => {
+                        const div = document.createElement('div');
+                        div.className = 'sugg-item';
+                        const name = f.properties.name || '';
+                        const state = f.properties.state || '';
+                        div.innerText = `${name}${state ? ', ' + state : ''}`;
+                        div.onclick = () => {
+                            input.value = div.innerText;
+                            resBox.style.display = 'none';
+                        };
+                        resBox.appendChild(div);
+                    });
+                }
+            });
+        }
+
+        initAutocomplete('from_loc', 'from-results');
+        initAutocomplete('to_loc', 'to-results');
+
+        // Close suggestions on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.matches('input')) {
+                document.querySelectorAll('.suggestions').forEach(s => s.style.display = 'none');
             }
         });
     </script>

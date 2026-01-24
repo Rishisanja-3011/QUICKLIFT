@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All India Carpool Search (Free)</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 40px; background: #f8f9fa; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #2c3e50; margin-top: 0; }
+        .input-group { margin-bottom: 25px; position: relative; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
+        input { width: 100%; padding: 12px; box-sizing: border-box; border: 2px solid #dee2e6; border-radius: 6px; font-size: 16px; transition: border-color 0.2s; }
+        input:focus { outline: none; border-color: #007bff; }
+        .suggestions { 
+            position: absolute; width: 100%; background: white; border: 1px solid #ccc; 
+            max-height: 250px; overflow-y: auto; z-index: 1000; display: none;
+            border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #f1f1f1; font-size: 15px; color: #333; }
+        .suggestion-item:hover { background: #e9ecef; }
+        #summary { margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 6px; display: none; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🇮🇳 India Carpool</h2>
+    
+    <div class="input-group">
+        <label>Pickup Location</label>
+        <!-- // pickup -->
+        <input type="text" id="pickup" placeholder="E.g., Mumbai, Delhi, Rajkot..." autocomplete="off">
+        <div id="pickup-suggestions" class="suggestions"></div>
+    </div>
+
+    <div class="input-group">
+        <label>Drop-off Location</label>
+        <!-- dropoff -->
+        <input type="text" id="dropoff" placeholder="E.g., Bangalore, Surat, Jaipur..." autocomplete="off">
+        <div id="dropoff-suggestions" class="suggestions"></div>
+    </div>
+
+    <div id="summary"></div>
+</div>
+
+<script>
+    const INDIA_BBOX = "68.1,7.9,97.4,35.5"; // minLon, minLat, maxLon, maxLat
+
+    function setupAutocomplete(inputId, suggestionId) {
+        const input = document.getElementById(inputId);
+        const suggestionBox = document.getElementById(suggestionId);
+
+        input.addEventListener('input', async (e) => {
+            const query = e.target.value;
+            if (query.length < 3) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+
+            // Photon API call with India Bounding Box
+            const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&bbox=${INDIA_BBOX}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                suggestionBox.innerHTML = '';
+                if (data.features.length > 0) {
+                    suggestionBox.style.display = 'block';
+                    data.features.forEach(feature => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        
+                        // Extract address parts safely
+                        const p = feature.properties;
+                        const label = [p.name, p.city, p.state].filter(x => x).join(', ');
+                        
+                        item.innerText = label;
+                        item.onclick = () => {
+                            input.value = label;
+                            suggestionBox.style.display = 'none';
+                            
+                            // Log coords to the summary box
+                            const [lng, lat] = feature.geometry.coordinates;
+                            showSummary(inputId, label, lat, lng);
+                        };
+                        suggestionBox.appendChild(item);
+                    });
+                }
+            } catch (err) {
+                console.error("Fetch error:", err);
+            }
+        });
+    }
+
+    let selections = { pickup: '', dropoff: '' };
+
+    function showSummary(type, name, lat, lng) {
+        selections[type] = `${name} (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        const summary = document.getElementById('summary');
+        summary.style.display = 'block';
+        summary.innerHTML = `<strong>Last Selection:</strong><br>${selections[type]}`;
+    }
+
+    setupAutocomplete('pickup', 'pickup-suggestions');
+    setupAutocomplete('dropoff', 'dropoff-suggestions');
+
+    // Close suggestions if user clicks elsewhere
+    document.addEventListener('click', (e) => {
+        if (!e.target.matches('input')) {
+            document.querySelectorAll('.suggestions').forEach(s => s.style.display = 'none');
+        }
+    });
+</script>
+
+</body>
+</html>
