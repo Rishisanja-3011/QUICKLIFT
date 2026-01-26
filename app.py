@@ -60,7 +60,7 @@ def login():
         query = "SELECT * FROM userdata WHERE username=%s AND passwords=%s"
         values = (username, password)
         cursor.execute(query, values)
-        result = cursor.fetchone()
+        result = cursor.fetchone() 
         if result:
             session['user'] = result
             return redirect('/dashboard')
