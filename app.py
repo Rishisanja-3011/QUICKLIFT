@@ -1,10 +1,19 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template,url_for,session
+from authlib.integrations.flask_client import OAuth
 import mysql.connector
 import os
 
 app = Flask(__name__)
-
+app.secret_key ="Patelbhai_here_3011"
 # Database connection
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id='853368867067-agsdp0bjm4c4q56j29pjrppqlh0fff63.apps.googleusercontent.com', # Get this from Google Console
+    client_secret='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', # Get this from Google Console
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
 db = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -17,6 +26,26 @@ cursor = db.cursor()
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+# --- GOOGLE AUTH ROUTES ---
+
+@app.route('/login/google')
+def google_login():
+    # This sends the user to Google's login page
+    redirect_uri = url_for('google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/auth/google/callback')
+def google_callback():
+    token = google.authorize_access_token()
+    user_info = token.get('userinfo')
+    
+    if user_info:
+        session['user'] = user_info
+        # Optional: Check if user exists in your MySQL 'userdata' table
+        # If not, you could 'INSERT' them here automatically.
+        return redirect('/dashboard')
+    
+    return redirect('/login')
 
 #login////////
 
@@ -33,6 +62,7 @@ def login():
         cursor.execute(query, values)
         result = cursor.fetchone()
         if result:
+            session['user'] = result
             return redirect('/dashboard')
         else:
             return render_template('login.html', error="Invalid credentials")
@@ -85,7 +115,9 @@ def register():
 #==========================================================
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    if 'user' not in session:
+        return redirect('/login')
+    return render_template('dashboard.html',user=session['user'])
 
 if __name__ == "__main__":
     app.run(debug=True)

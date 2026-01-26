@@ -83,6 +83,26 @@
 
                     <button type="submit" class="btn">Log In</button>
                 </form>
+                <div style="text-align: center; margin: 20px 0; color: #888; font-size: 0.9rem;">
+    <span>OR</span>
+</div>
+
+<a href="{{ url_for('google_login') }}" class="btn-google" style="
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: #444;
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.3s;
+">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" style="width: 20px; margin-right: 12px;">
+    Continue with Google
+</a>
 
                 <div class="auth-footer">
                     Don't have an account? <a href="register.html">Sign Up</a>
