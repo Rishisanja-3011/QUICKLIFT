@@ -25,7 +25,7 @@ try:
     db = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="preet.347",
+        password="Patel_2101",
         database="quicklift"
     )
     cursor = db.cursor()

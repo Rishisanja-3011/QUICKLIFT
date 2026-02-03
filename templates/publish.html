@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publish a Ride - TripShare</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .result-card { background: #f4f9ff; border: 1px solid #cce5ff; padding: 20px; border-radius: 10px; margin-bottom: 20px; animation: fadeIn 0.5s; }
+        .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 10px; }
+        .result-item { display: flex; align-items: center; gap: 10px; }
+        .result-item i { color: #007bff; font-size: 1.2rem; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <header class="dash-header">
+        <a href="{{ url_for('dashboard') }}" class="logo-dark" style="margin-bottom:0">Trip<span>Share</span></a>
+        <nav class="nav-links">
+            <a href="{{ url_for('find_ride') }}"><i class="fas fa-search"></i> Find a Ride</a>
+            <a href="{{ url_for('publish') }}" class="active"><i class="fas fa-plus-circle"></i> Publish a Ride</a>
+            <a href="{{ url_for('dashboard') }}"><i class="fas fa-history"></i> My Rides</a>
+        </nav>
+    </header>
+
+    <section class="page-hero">
+        <h1>Publish Your Ride</h1>
+        <p>Share your journey, set your price, and help fellow travelers.</p>
+    </section>
+
+    <main class="publish-container">
+        {% if calculated_km %}
+        <div class="result-card">
+            <div class="result-header">
+                <h3><i class="fas fa-check-circle" style="color: green;"></i> Ride Summary</h3>
+                <span class="tag"><strong>{{ leaving_from }}</strong> to <strong>{{ going_to }}</strong></span>
+            </div>
+            <div class="result-grid">
+                <div class="result-item">
+                    <i class="fas fa-route"></i>
+                    <div>
+                        <strong>{{ calculated_km }} km</strong>
+                        <p style="margin:0; font-size: 0.8rem; color: #666;">Driving Distance</p>
+                    </div>
+                </div>
+                <div class="result-item">
+                    <i class="fas fa-indian-rupee-sign"></i>
+                    <div>
+                        <strong>₹ {{ total_price }}</strong>
+                        <p style="margin:0; font-size: 0.8rem; color: #666;">Total Trip Value</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form class="publish-form" id="rideForm" action="/publish" method="POST">
+            <h3>Enter Trip Info</h3>
+            
+            <input type="hidden" name="start_lat" id="start_lat">
+            <input type="hidden" name="start_lon" id="start_lon">
+            <input type="hidden" name="dest_lat" id="dest_lat">
+            <input type="hidden" name="dest_lon" id="dest_lon">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Leaving from</label>
+                    <input class="form-control" name="leaving_from" id="from_city" type="text" placeholder="City name (e.g. Surat)" required>
+                </div>
+                <div class="form-group">
+                    <label>Going to</label>
+                    <input class="form-control" name="going_to" id="to_city" type="text" placeholder="City name (e.g. Mumbai)" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date & Time</label>
+                    <div style="display:flex; gap:10px;">
+                        <input class="form-control" name="date" type="date" required>
+                        <input class="form-control" name="time" type="time" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Available Seats</label>
+                    <select class="form-control" name="seats">
+                        <option value="1">1 Seat</option>
+                        <option value="2">2 Seats</option>
+                        <option value="3">3 Seats</option>
+                        <option value="4">4 Seats</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Vehicle Type</label>
+                    <select class="form-control" name="vehicle">
+                        <option>Hatchback</option>
+                        <option>Sedan</option>
+                        <option>SUV</option>
+                        <option>Bike</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Preferences</label>
+                    <div class="prefs">
+                        <label class="pref-item"><input type="checkbox" name="luggage"> Luggage</label>
+                        <label class="pref-item"><input type="checkbox" name="no_smoking"> No Smoking</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">Calculate & Publish</button>
+        </form>
+    </main>
+
+    <script>
+        document.getElementById('rideForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerText = "Finding Route...";
+            submitBtn.disabled = true;
+
+            const fromCity = document.getElementById('from_city').value;
+            const toCity = document.getElementById('to_city').value;
+
+            async function getCoords(city) {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city}`);
+                const data = await res.json();
+                return data.length > 0 ? { lat: data[0].lat, lon: data[0].lon } : null;
+            }
+
+            const start = await getCoords(fromCity);
+            const dest = await getCoords(toCity);
+
+            if (start && dest) {
+                document.getElementById('start_lat').value = start.lat;
+                document.getElementById('start_lon').value = start.lon;
+                document.getElementById('dest_lat').value = dest.lat;
+                document.getElementById('dest_lon').value = dest.lon;
+                this.submit(); // Now send to Flask
+            } else {
+                alert("Could not find city coordinates. Please check spelling.");
+                submitBtn.innerText = "Calculate & Publish";
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
