@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find a Ride - TripShare</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="dash-header">
+        <a href="{{ url_for('dashboard') }}" class="logo-dark" style="margin-bottom:0">Trip<span>Share</span></a>
+        <nav class="nav-links">
+            <a href="{{ url_for('find_ride') }}" class="active"><i class="fas fa-search"></i> Find a Ride</a>
+            <a href="{{ url_for('publish') }}"><i class="fas fa-plus-circle"></i> Publish a Ride</a>
+            <a href="{{ url_for('dashboard') }}"><i class="fas fa-history"></i> My Rides</a>
+        </nav>
+    </header>
+    <main style="padding: 40px;">
+        <h2>Find a Ride</h2>
+        <p>Search rides across India. Coming soon.</p>
+    </main>
+    <script src="/static/main.js"></script>
+</body>
+</html>

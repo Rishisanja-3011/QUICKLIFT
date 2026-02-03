@@ -9,12 +9,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
         <div class="auth-card">
-            <a href="index.html" class="logo">Trip<span>Share</span></a>
+            <a href="{{ url_for('index') }}" class="logo">Trip<span>Share</span></a>
             
             <div class="auth-header">
                 <h2>Verify Email</h2>
@@ -39,11 +39,11 @@
             </div>
             
             <div style="margin-top: 15px;">
-                <a href="login.html" class="btn-secondary" style="display:inline-block; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; text-decoration:none;">Back to Login</a>
+                <a href="{{ url_for('login') }}" class="btn-secondary" style="display:inline-block; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; text-decoration:none;">Back to Login</a>
             </div>
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <script src="/static/main.js"></script>
 </body>
 </html>

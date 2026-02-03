@@ -55,7 +55,7 @@
         
         <div class="right-pane">
             <div class="auth-container">
-                <a href="index.html" class="logo-dark">Trip<span>Share</span></a>
+                <a href="{{ url_for('index') }}" class="logo-dark">Trip<span>Share</span></a>
                 
                 <div class="auth-header">
                     <h2>Log In</h2>
@@ -78,7 +78,7 @@
                     </div>
 
                     <div style="text-align: right; margin-bottom: 25px;">
-                        <a href="forgot-password.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Forgot Password?</a>
+                        <a href="{{ url_for('forgot_password') }}" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Forgot Password?</a>
                     </div>
 
                     <button type="submit" class="btn">Log In</button>
@@ -134,7 +134,7 @@
 
 
                 <div class="auth-footer">
-                    Don't have an account? <a href="register.html">Sign Up</a>
+                    Don't have an account? <a href="{{ url_for('register') }}">Sign Up</a>
                 </div>
             </div>
         </div>

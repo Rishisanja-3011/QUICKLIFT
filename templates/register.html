@@ -56,7 +56,7 @@
         
         <div class="right-pane">
             <div class="auth-container">
-                <a href="index.html" class="logo-dark">Trip<span>Share</span></a>
+                <a href="{{ url_for('index') }}" class="logo-dark">Trip<span>Share</span></a>
                 
                 <div class="auth-header">
                     <h2>Join the Community</h2>
@@ -132,7 +132,7 @@
                 </form>
 
                 <div class="auth-footer">
-                    Already have an account? <a href="login.html">Log in</a>
+                    Already have an account? <a href="{{ url_for('login') }}">Log in</a>
                 </div>
             </div>
         </div>
