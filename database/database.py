@@ -48,4 +48,5 @@ print("DATABASE BAAN K TAYAR HO CHUKAA HEE , KRUPIYA SQL WORKBENCH MEIN JAA K CH
 
 # Close the connection
 cursor.close()
+
 db.close()
