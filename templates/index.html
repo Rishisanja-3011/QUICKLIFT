@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/static/style.css">
     <style>
         /* Landing Page Specific Styles */
         body {
@@ -76,10 +76,10 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="index.html" class="logo">Trip<span>Share</span></a>
+        <a href="{{ url_for('index') }}" class="logo">Trip<span>Share</span></a>
         <div style="display: flex; gap: 15px;">
-            <a href="login.html" style="text-decoration: none; color: var(--primary-color); font-weight: 600; padding: 10px 20px;">Login</a>
-            <a href="register.html" class="btn" style="width: auto; padding: 10px 20px;">Sign Up</a>
+            <a href="{{ url_for('login') }}" style="text-decoration: none; color: var(--primary-color); font-weight: 600; padding: 10px 20px;">Login</a>
+            <a href="{{ url_for('register') }}" class="btn" style="width: auto; padding: 10px 20px;">Sign Up</a>
         </div>
     </nav>
 
@@ -87,8 +87,8 @@
         <h1>Your Ride, Your Choice</h1>
         <p>Travel together, save money, and meet new people. The most trusted carpooling community.</p>
         <div class="hero-buttons">
-            <a href="login.html" class="btn btn-large">Find a Ride</a>
-            <a href="login.html" class="btn btn-large btn-outline">Offer a Ride</a>
+            <a href="{{ url_for('login') }}" class="btn btn-large">Find a Ride</a>
+            <a href="{{ url_for('login') }}" class="btn btn-large btn-outline">Offer a Ride</a>
         </div>
     </header>
 
@@ -97,7 +97,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const user = localStorage.getItem('tripShareUser');
             if (user) {
-                window.location.href = 'dashboard.html';
+                window.location.href = '/dashboard';
             }
         });
     </script>

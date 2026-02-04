@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //             };
                 
     //             localStorage.setItem('tripShareUser', JSON.stringify(user));
-    //             window.location.href = 'dashboard.html';
+    //             window.location.href = '/dashboard';
     //         }, 1500);
     //     });
     // }
@@ -110,10 +110,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Simulate sending OTP
                 // console.log('OTP Sent: 1234'); 
                 
-                // window.location.href = 'otp.html';
+                // window.location.href = '/otp';
             }, 2000);
         });
     }
+
+    // --- Fallback Login Navigation ---
+    const ensureLoginRedirect = () => {
+        const links = document.querySelectorAll('a');
+        links.forEach(a => {
+            const text = (a.textContent || '').trim().toLowerCase();
+            const hrefAttr = a.getAttribute('href');
+            if (text === 'login' && (!hrefAttr || hrefAttr === '#')) {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/login';
+                });
+            }
+        });
+    };
+    ensureLoginRedirect();
 
     // --- OTP Logic ---
     const otpForm = document.getElementById('otpForm');
@@ -167,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('tripShareUser', JSON.stringify(user));
                     sessionStorage.removeItem('tempRegisterUser'); 
                     
-                    window.location.href = 'dashboard.html';
+                    window.location.href = '/dashboard';
                 } else {
                     // Fallback
                      const user = {
@@ -177,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         token: 'mock-jwt-token-verified'
                     };
                     localStorage.setItem('tripShareUser', JSON.stringify(user));
-                    window.location.href = 'dashboard.html';
+                    window.location.href = '/dashboard';
                 }
             }, 1500);
         });
@@ -210,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setTimeout(() => {
                 sessionStorage.setItem('resetEmail', email);
-                window.location.href = 'otp.html'; 
+                window.location.href = '/otp'; 
             }, 1500);
         });
     }
@@ -220,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('tripShareUser');
-            window.location.href = 'login.html';
+            window.location.href = '/logout';
         });
     }
 
