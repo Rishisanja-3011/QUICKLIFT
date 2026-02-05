@@ -632,6 +632,7 @@ select.form-control {
     .form-row {
         flex-direction: column;
     }
+    
     .result-grid {
         grid-template-columns: repeat(2, 1fr);
     }
