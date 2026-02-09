@@ -3,23 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find a Ride - TripShare</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Global Ledger | TripShare Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --accent: #00aff5;
+            --surface: #ffffff;
+            --body-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--body-bg); 
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+        }
+
+        /* Side Navigation */
+        .side-nav {
+            width: 260px;
+            height: 100vh;
+            background: #0f172a;
+            color: white;
+            position: fixed;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 50px; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .nav-item { 
+            padding: 12px 15px; margin-bottom: 8px; border-radius: 12px; display: flex; 
+            align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; transition: 0.2s;
+        }
+        .nav-item.active { background: rgba(0, 175, 245, 0.15); color: var(--accent); font-weight: 600; }
+        .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); color: white; transform: translateX(4px); }
+
+        .workspace { margin-left: 260px; width: calc(100% - 260px); padding: 40px; box-sizing: border-box; }
+
+        .search-bar-pro {
+            background: white; padding: 12px; border-radius: 20px; display: flex;
+            align-items: center; gap: 15px; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; margin-bottom: 30px;
+        }
+
+        .search-unit { flex: 1; display: flex; align-items: center; gap: 10px; padding: 0 15px; border-right: 1px solid #f1f5f9; }
+        .search-unit input { border: none; outline: none; width: 100%; font-size: 0.95rem; }
+        
+        .btn-search { background: #0f172a; color: white; border: none; padding: 12px 28px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-search:hover { background: var(--accent); }
+
+        .ride-card-pro {
+            background: white; border-radius: 24px; padding: 28px; border: 1px solid #e2e8f0;
+            transition: all 0.4s ease; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .ride-card-pro:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); }
+
+        .route-data { position: relative; padding-left: 28px; border-left: 2px dashed #cbd5e0; margin-left: 10px; }
+        .point { position: relative; margin-bottom: 20px; }
+        .point::before {
+            content: ''; position: absolute; left: -34px; top: 4px; width: 10px; height: 10px;
+            border-radius: 50%; background: white; border: 2px solid var(--accent);
+        }
+
+        .price-engine { text-align: right; }
+        .amt { font-size: 1.8rem; font-weight: 900; color: #0f172a; }
+        .btn-reserve {
+            margin-top: 15px; background: #0f172a; color: white; text-decoration: none;
+            padding: 12px 25px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; display: inline-block;
+        }
+
+        .empty-terminal { text-align: center; padding: 60px; background: white; border-radius: 30px; border: 1px solid #e2e8f0; }
+        .empty-terminal img { width: 250px; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-    <header class="dash-header">
-        <a href="{{ url_for('dashboard') }}" class="logo-dark" style="margin-bottom:0">Trip<span>Share</span></a>
-        <nav class="nav-links">
-            <a href="{{ url_for('find_ride') }}" class="active"><i class="fas fa-search"></i> Find a Ride</a>
-            <a href="{{ url_for('publish') }}"><i class="fas fa-plus-circle"></i> Publish a Ride</a>
-            <a href="{{ url_for('dashboard') }}"><i class="fas fa-history"></i> My Rides</a>
-        </nav>
-    </header>
-    <main style="padding: 40px;">
-        <h2>Find a Ride</h2>
-        <p>Search rides across India. Coming soon.</p>
-    </main>
-    <script src="/static/main.js"></script>
+
+    <nav class="side-nav">
+        <a href="#" class="logo"><i class="fa-solid fa-bolt"></i> <span>TripShare</span></a>
+        <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> <span>Insights</span></a>
+        <a href="{{ url_for('find_ride') }}" class="nav-item active"><i class="fa-solid fa-globe"></i> <span>Global Ledger</span></a>
+        <a href="{{ url_for('publish') }}" class="nav-item"><i class="fa-solid fa-plus-square"></i> <span>Publish Node</span></a>
+    </nav>
+
+    <div class="workspace">
+        <h1>Global Ride Ledger</h1>
+        
+        <form class="search-bar-pro" action="/find-ride" method="POST">
+            <div class="search-unit">
+                <i class="fa-solid fa-location-dot"></i>
+                <input type="text" name="from" placeholder="Origin Node">
+            </div>
+            <div class="search-unit">
+                <i class="fa-solid fa-crosshairs"></i>
+                <input type="text" name="to" placeholder="Destination Node">
+            </div>
+            <button type="submit" class="btn-search">Query Network</button>
+        </form>
+
+        <div class="rides-container">
+            {% if rides %}
+                {% for ride in rides %}
+                <div class="ride-card-pro">
+                    <div>
+                        <span style="font-weight: 800; font-size: 1.2rem; display: block; margin-bottom: 15px;">
+                            <i class="far fa-clock"></i> {{ ride['time'] }}
+                        </span>
+                        <div class="route-data">
+                            <div class="point"><strong>{{ ride['leaving_from'] }}</strong></div>
+                            <div class="point"><strong>{{ ride['going_to'] }}</strong></div>
+                        </div>
+                        <div style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+                            <i class="fa fa-user"></i> Driver: <strong>{{ ride['username'] }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="price-engine">
+                        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Verified Rate</span>
+                        <div class="amt">₹{{ ride['price_per_seat'] }}</div>
+                        <p style="font-size: 0.85rem; margin: 5px 0;">{{ ride['seats'] }} capacity left</p>
+                        <a href="{{ url_for('book_ride', ride_id=ride['id']) }}" class="btn-reserve" onclick="return confirm('Reserve seat?')">Reserve Seat</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-terminal">
+                    <img src="https://cdni.iconscout.com/illustration/premium/thumb/no-data-found-illustration-download-in-svg-png-gif-file-formats--missing-error-empty-state-pack-user-interface-illustrations-5218663.png" alt="No Rides">
+                    <h2>No Transit Nodes Found</h2>
+                    <p>The network shows no active rides. Try a different city node.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>

@@ -3,187 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - TripShare</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Gateway | TripShare Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* Dashboard Specific Styles */
-        .dash-header {
-            background: white;
-            padding: 15px 50px;
+        :root {
+            --accent: #00aff5;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: radial-gradient(circle at top right, #f8fafc, #e2e8f0); 
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* UNIQUE: Floating Glass Top Nav */
+        .glass-nav {
+            position: fixed;
+            top: 20px;
+            width: 90%;
+            max-width: 1100px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.3);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: var(--shadow-soft);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            z-index: 1000;
         }
-        .nav-links { display: flex; gap: 30px; align-items: center; }
-        .nav-links a { 
-            text-decoration: none; 
-            color: var(--text-color); 
-            font-weight: 500; 
-            transition: 0.3s;
+
+        .logo-pro { font-size: 1.4rem; font-weight: 800; color: var(--dark); text-decoration: none; }
+        .logo-pro span { color: var(--accent); }
+
+        .nav-links-hub { display: flex; gap: 20px; }
+        .nav-links-hub a { 
+            text-decoration: none; color: var(--dark); font-weight: 600; font-size: 0.9rem;
+            padding: 10px 18px; border-radius: 14px; transition: 0.3s;
         }
-        .nav-links a:hover, .nav-links a.active { color: var(--primary-color); }
-        
-        .hero-search {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            height: 300px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
+        .nav-links-hub a:hover { background: rgba(0, 175, 245, 0.1); color: var(--accent); }
+
+        /* Command Hub Layout */
+        .hub-container {
+            margin-top: 140px;
+            width: 90%;
+            max-width: 1000px;
             text-align: center;
         }
 
-        .search-container {
+        .welcome-hero { margin-bottom: 50px; }
+        .welcome-hero h1 { font-size: 3.5rem; font-weight: 800; color: var(--dark); margin: 0; letter-spacing: -2px; }
+        .welcome-hero p { color: #64748b; font-size: 1.2rem; margin-top: 10px; }
+
+        /* The Hub Tiles */
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .hub-card {
             background: white;
-            padding: 10px;
-            border-radius: 50px;
-            display: flex;
-            width: 90%;
-            max-width: 900px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            margin-top: 20px;
-            position: relative;
-        }
-
-        .search-box {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            padding: 10px 20px;
-            border-right: 1px solid #eee;
-            position: relative;
-        }
-
-        .search-box:last-of-type { border-right: none; }
-
-        .search-box i { color: var(--primary-color); margin-right: 10px; }
-        .search-box input {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 1rem;
-            font-family: 'Poppins';
-        }
-
-        .btn-search {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 35px;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        /* Suggestion Dropdown Styling */
-        .suggestions {
-            position: absolute;
-            top: 110%;
-            left: 0;
-            width: 100%;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: none;
-            color: #333;
+            padding: 40px;
+            border-radius: 32px;
+            border: 1px solid #e2e8f0;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: left;
+            position: relative;
+            overflow: hidden;
         }
-        .sugg-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #f8f8f8; }
-        .sugg-item:hover { background: #f0faff; }
+
+        .hub-card:hover {
+            transform: translateY(-12px);
+            border-color: var(--accent);
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.1);
+        }
+
+        .hub-card i {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        .hub-card h3 { font-size: 1.6rem; font-weight: 800; margin: 0; color: var(--dark); }
+        .hub-card p { color: #64748b; line-height: 1.6; margin-top: 15px; }
+
+        /* Trust & Security footer */
+        .trust-strip {
+            background: var(--dark);
+            color: white;
+            padding: 30px;
+            border-radius: 24px;
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .trust-item { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; font-weight: 500; opacity: 0.8; }
+        .trust-item i { color: var(--accent); font-size: 1.2rem; }
+
+        @media (max-width: 768px) {
+            .welcome-hero h1 { font-size: 2.5rem; }
+            .hub-grid { grid-template-columns: 1fr; }
+            .nav-links-hub { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <header class="dash-header">
-        <a href="{{ url_for('dashboard') }}" class="logo-dark" style="margin-bottom:0">Trip<span>Share</span></a>
-        <nav class="nav-links">
-            <a href="{{ url_for('find_ride') }}" class="active"><i class="fas fa-search"></i> Find a Ride</a>
-            <a href="{{ url_for('publish') }}"><i class="fas fa-plus-circle"></i> Publish a Ride</a>
-            <a href="{{ url_for('dashboard') }}"><i class="fas fa-history"></i> My Rides</a>
-            <div class="user-info">
-                <div class="avatar-circle" style="width:35px; height:35px; font-size: 0.9rem;">U</div>
-            </div>
-        </nav>
-    </header>
-
-    <section class="hero-search">
-        <h1>Your pick of rides at low prices</h1>
-        
-        <div class="search-container">
-            <div class="search-box">
-                <i class="fas fa-circle-notch"></i>
-                <input type="text" id="from_loc" placeholder="Leaving from..." autocomplete="off">
-                <div id="from-results" class="suggestions"></div>
-            </div>
-
-            <div class="search-box">
-                <i class="fas fa-map-marker-alt"></i>
-                <input type="text" id="to_loc" placeholder="Going to..." autocomplete="off">
-                <div id="to-results" class="suggestions"></div>
-            </div>
-
-            <div class="search-box" style="flex: 0.5;">
-                <i class="fas fa-calendar-alt"></i>
-                <input type="date" id="travel_date">
-            </div>
-
-            <button class="btn-search">Search</button>
+    <nav class="glass-nav">
+        <a href="#" class="logo-pro">TripShare<span>Pro</span></a>
+        <div class="nav-links-hub">
+            <a href="{{ url_for('find_ride') }}">Explorer</a>
+            <a href="{{ url_for('publish') }}">Deploy Node</a>
+            <a href="/insights">Intelligence</a>
         </div>
-    </section>
+        <a href="{{ url_for('logout') }}" style="color: #f87171; font-weight: 700; text-decoration: none; font-size: 0.9rem;">Disconnect</a>
+    </nav>
 
-    <main style="padding: 50px; text-align: center;">
-        <h3 style="color: var(--text-muted);">Recent Rides in India</h3>
-        </main>
+    <div class="hub-container">
+        <header class="welcome-hero">
+            <h1>Identity Verified.</h1>
+            <p>Welcome back, <strong>{{ user['username'] }}</strong>. Your node is active in the Surat sector.</p>
+        </header>
 
-    <script>
-        // Photon API Integration for All-India Search
-        function initAutocomplete(inputId, resultsId) {
-            const input = document.getElementById(inputId);
-            const resBox = document.getElementById(resultsId);
+        <div class="hub-grid">
+            <a href="{{ url_for('find_ride') }}" class="hub-card">
+                <i class="fa-solid fa-satellite-dish"></i>
+                <h3>Enter Explorer</h3>
+                <p>Query the global ledger to find verified commuters and optimize your route costs.</p>
+                <div style="margin-top: 20px; color: var(--accent); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">142 Active Nodes →</div>
+            </a>
 
-            input.addEventListener('input', async () => {
-                const val = input.value;
-                if (val.length < 3) { resBox.style.display = 'none'; return; }
+            <a href="{{ url_for('publish') }}" class="hub-card">
+                <i class="fa-solid fa-share-nodes"></i>
+                <h3>Deploy Node</h3>
+                <p>Register your upcoming transit details to sync with the peer-to-peer network.</p>
+                <div style="margin-top: 20px; color: var(--accent); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Initialize Sync →</div>
+            </a>
+        </div>
 
-                const resp = await fetch(`https://photon.komoot.io/api/?q=${val}&limit=5&bbox=68.1,7.9,97.4,35.5`);
-                const data = await resp.json();
+        <div class="trust-strip">
+            <div class="trust-item"><i class="fa-solid fa-shield-check"></i> AES-256 Encrypted</div>
+            <div class="trust-item"><i class="fa-solid fa-user-lock"></i> ID Verified Ledger</div>
+            <div class="trust-item"><i class="fa-solid fa-server"></i> 99.9% Network Uptime</div>
+        </div>
+        <p style="margin-top: 20px; font-size: 0.75rem; color: #94a3b8;">TripShare Pro v2.1.0 // Real-time Peer-to-Peer Transit Network</p>
+    </div>
 
-                resBox.innerHTML = '';
-                if (data.features.length > 0) {
-                    resBox.style.display = 'block';
-                    data.features.forEach(f => {
-                        const div = document.createElement('div');
-                        div.className = 'sugg-item';
-                        const name = f.properties.name || '';
-                        const state = f.properties.state || '';
-                        div.innerText = `${name}${state ? ', ' + state : ''}`;
-                        div.onclick = () => {
-                            input.value = div.innerText;
-                            resBox.style.display = 'none';
-                        };
-                        resBox.appendChild(div);
-                    });
-                }
-            });
-        }
-
-        initAutocomplete('from_loc', 'from-results');
-        initAutocomplete('to_loc', 'to-results');
-
-        // Close suggestions on outside click
-        document.addEventListener('click', (e) => {
-            if (!e.target.matches('input')) {
-                document.querySelectorAll('.suggestions').forEach(s => s.style.display = 'none');
-            }
-        });
-    </script>
 </body>
 </html>

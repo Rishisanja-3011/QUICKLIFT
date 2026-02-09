@@ -1,6 +1,5 @@
 import mysql.connector
 
-# Initial connection to MySQL
 db = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -8,45 +7,45 @@ db = mysql.connector.connect(
 )
 
 cursor = db.cursor()
-
-# 1. Create the Database if it doesn't exist
-query = """CREATE DATABASE IF NOT EXISTS quicklift"""
-cursor.execute(query)
-db.commit()
-
-# Switch to the quicklift database
+cursor.execute("CREATE DATABASE IF NOT EXISTS quicklift")
 cursor.execute("USE quicklift")
 
-# 2. Create the User Table
-query = """CREATE TABLE IF NOT EXISTS userdata (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            fullname VARCHAR(100),
-            username VARCHAR(50) UNIQUE,
-            email VARCHAR(100),
-            phnumber VARCHAR(20),
-            city VARCHAR(50),
-            gender VARCHAR(10),
-            files VARCHAR(255),
-            passwords VARCHAR(255)
-        )"""
+# 1. User Table (Stays the same)
+cursor.execute("""CREATE TABLE IF NOT EXISTS userdata (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fullname VARCHAR(100),
+    username VARCHAR(50) UNIQUE,
+    email VARCHAR(100),
+    phnumber VARCHAR(20),
+    city VARCHAR(50),
+    gender VARCHAR(10),
+    files VARCHAR(255),
+    passwords VARCHAR(255)
+)""")
+
+# 2. Rides Table (UPDATED to match your app.py)
+# Note: We drop it first so we can recreate it with the missing columns
+cursor.execute("DROP TABLE IF EXISTS rides") 
+
+query = """CREATE TABLE rides (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255),
+    leaving_from VARCHAR(255),
+    going_to VARCHAR(255),
+    date DATE,
+    time TIME,
+    seats INT,
+    vehicle VARCHAR(100),
+    distance_km DECIMAL(10,2),
+    price_per_seat DECIMAL(10,2),
+    total_price DECIMAL(10,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)"""
+
 cursor.execute(query)
 db.commit()
 
-# 3. Create the Rides Table
-# This table stores the distance-based pricing results
-query = """CREATE TABLE IF NOT EXISTS rides (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(255),
-            distance_km DECIMAL(10,2),
-            price DECIMAL(10,2),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )"""
-cursor.execute(query)
-db.commit()
+print("DATABASE UPDATED! Now 'date' and 'leaving_from' columns exist.")
 
-print("DATABASE BAAN K TAYAR HO CHUKAA HEE , KRUPIYA SQL WORKBENCH MEIN JAA K CHECK KAREIN")
-
-# Close the connection
 cursor.close()
-
 db.close()

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Insights | TripShare Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --accent: #00aff5; --dark: #0f172a; --slate-50: #f8fafc; --slate-200: #e2e8f0; }
+        body { font-family: 'Inter', sans-serif; background: var(--slate-50); margin: 0; display: flex; }
+        
+        .side-nav { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; padding: 30px 20px; display: flex; flex-direction: column; }
+        .logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 50px; color: var(--accent); text-decoration: none; }
+        .nav-item { padding: 12px 15px; margin-bottom: 8px; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; }
+        .nav-item.active { background: rgba(0, 175, 245, 0.15); color: var(--accent); }
+
+        .workspace { margin-left: 260px; width: calc(100% - 260px); padding: 40px; box-sizing: border-box; }
+
+        /* Top Grid */
+        .insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 40px; }
+        .stat-box { background: white; padding: 30px; border-radius: 24px; border: 1px solid var(--slate-200); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .stat-box small { color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-box h2 { margin: 10px 0 0; font-size: 1.8rem; color: var(--dark); }
+
+        /* Chart Section */
+        .chart-container { background: white; padding: 30px; border-radius: 24px; border: 1px solid var(--slate-200); margin-bottom: 40px; height: 350px; }
+
+        /* History Table */
+        .table-card { background: white; border-radius: 24px; border: 1px solid var(--slate-200); overflow: hidden; }
+        .table-header { padding: 25px; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 18px 25px; background: #fcfcfd; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 20px 25px; border-bottom: 1px solid var(--slate-200); font-size: 0.9rem; }
+        .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #475569; }
+        .status-success { background: #dcfce7; color: #166534; }
+    </style>
+</head>
+<body>
+
+    <nav class="side-nav">
+        <a href="#" class="logo">TripShare <span>Pro</span></a>
+        <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fa-solid fa-shield-halved"></i> Dashboard</a>
+        <a href="{{ url_for('find_ride') }}" class="nav-item"><i class="fa-solid fa-magnifying-glass-location"></i> Explore Nodes</a>
+        <a href="{{ url_for('publish') }}" class="nav-item"><i class="fa-solid fa-plus-circle"></i> Deploy Trip</a>
+        <a href="/insights" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Network Insights</a>
+    </nav>
+
+    <div class="workspace">
+        <header style="margin-bottom: 40px;">
+            <h1 style="font-size: 2.2rem; letter-spacing: -1px; margin: 0;">Network Insights</h1>
+            <p style="color: #64748b;">Algorithmic breakdown of your transit footprint.</p>
+        </header>
+
+        <div class="insights-grid">
+            <div class="stat-box">
+                <small>Wallet Assets</small>
+                <h2>₹ {{ stats.wallet_balance }}</h2>
+            </div>
+            <div class="stat-box">
+                <small>Carbon Offset</small>
+                <h2>{{ stats.carbon_saved }} kg</h2>
+            </div>
+            <div class="stat-box">
+                <small>Node Efficiency</small>
+                <h2>98.4%</h2>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="carbonChart"></canvas>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <h3 style="margin: 0;">Transit Ledger</h3>
+                <i class="fa-solid fa-file-export" style="color: var(--accent); cursor: pointer;"></i>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transit Node (Route)</th>
+                        <th>Timestamp</th>
+                        <th>Contribution</th>
+                        <th>Network Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history %}
+                    <tr>
+                        <td><strong>{{ item['leaving_from'] }} → {{ item['going_to'] }}</strong></td>
+                        <td>{{ item['date'] }}</td>
+                        <td>₹ {{ item['price_per_seat'] }}</td>
+                        <td><span class="status-badge status-success">{{ item['status'] }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('carbonChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Carbon Savings (kg/month)',
+                    data: [2, 5, 8, 12, 10, 14],
+                    borderColor: '#00aff5',
+                    backgroundColor: 'rgba(0, 175, 245, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
