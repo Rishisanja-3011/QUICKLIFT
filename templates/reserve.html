@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Booking | TripShare Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --accent: #00aff5;
+            --surface: #ffffff;
+            --body-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--body-bg); margin: 0; display: flex; }
+        .workspace { width: 100%; display: flex; justify-content: center; padding: 50px; }
+        .booking-card {
+            background: white; width: 100%; max-width: 500px; border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; overflow: hidden;
+        }
+        .header { background: #0f172a; color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .label { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
+        .value { color: var(--text-main); font-weight: 700; }
+        .price-section { background: #f0f9ff; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; }
+        .total-price { font-size: 2rem; font-weight: 900; color: #0f172a; }
+        .btn-confirm {
+            background: #0f172a; color: white; border: none; width: 100%; padding: 15px;
+            border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s;
+        }
+        .btn-confirm:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="workspace">
+        <div class="booking-card">
+            <div class="header">
+                <i class="fa-solid fa-receipt fa-2x" style="color: var(--accent);"></i>
+                <h2>Reservation Summary</h2>
+            </div>
+            <div class="content">
+                <div class="row">
+                    <span class="label">From Node</span>
+                    <span class="value">{{ ride['leaving_from'] }}</span>
+                </div>
+                <div class="row">
+                    <span class="label">To Node</span>
+                    <span class="value">{{ ride['going_to'] }}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Vehicle</span>
+                    <span class="value">{{ ride['vehicle'] }}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Driver</span>
+                    <span class="value">@{{ ride['username'] }}</span>
+                </div>
+
+                <div class="price-section">
+                    <span class="label">PAYABLE AMOUNT</span>
+                    <div class="total-price">₹{{ ride['price_per_seat'] }}</div>
+                </div>
+
+                <form action="{{ url_for('book_ride', ride_id=ride['id']) }}" method="GET">
+                    <button type="submit" class="btn-confirm">Confirm & Reserve Seat</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px;">
+                    <a href="/find-ride" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem;">Go Back</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

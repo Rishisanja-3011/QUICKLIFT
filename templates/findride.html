@@ -80,6 +80,17 @@
 
         .empty-terminal { text-align: center; padding: 60px; background: white; border-radius: 30px; border: 1px solid #e2e8f0; }
         .empty-terminal img { width: 250px; margin-bottom: 20px; }
+
+        /* Flash Message Styling */
+        .flash-msg {
+            padding: 15px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #fecaca;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -106,6 +117,14 @@
             <button type="submit" class="btn-search">Query Network</button>
         </form>
 
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="flash-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
         <div class="rides-container">
             {% if rides %}
                 {% for ride in rides %}
@@ -127,7 +146,8 @@
                         <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Verified Rate</span>
                         <div class="amt">₹{{ ride['price_per_seat'] }}</div>
                         <p style="font-size: 0.85rem; margin: 5px 0;">{{ ride['seats'] }} capacity left</p>
-                        <a href="{{ url_for('book_ride', ride_id=ride['id']) }}" class="btn-reserve" onclick="return confirm('Reserve seat?')">Reserve Seat</a>
+                        
+                        <a href="{{ url_for('reserve_page', ride_id=ride['id']) }}" class="btn-reserve">Reserve Seat</a>
                     </div>
                 </div>
                 {% endfor %}

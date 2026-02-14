@@ -75,21 +75,44 @@ def google_callback():
         return redirect('/dashboard')
     return redirect('/login')
 
+
+@app.route('/forgot-password')
+def forgot_password():
+    return "Forgot Password Page - Coming Soon"
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        
         if not username or not password:
             return render_template('login.html', error="All Fields required")
-        query = "SELECT * FROM userdata WHERE username=%s AND passwords=%s"
-        cursor.execute(query, (username, password))
-        result = cursor.fetchone() 
-        if result:
-            session['user'] = result
-            return redirect('/dashboard')
-        return render_template('login.html', error="Invalid credentials")
+        
+        try:
+            # Ensure DB is connected
+            if not db.is_connected():
+                db.reconnect()
+            
+            # Use the cursor to find the user
+            query = "SELECT * FROM userdata WHERE username=%s AND passwords=%s"
+            cursor.execute(query, (username, password))
+            result = cursor.fetchone() 
+            
+            if result:
+                # result is a dictionary because of cursor(dictionary=True)
+                session['user'] = result
+                return redirect('/dashboard')
+            else:
+                return render_template('login.html', error="Invalid username or password")
+                
+        except Exception as e:
+            print(f"Login Error: {e}")
+            return render_template('login.html', error="Database connection failed. Please try again.")
+
     return render_template('login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -120,10 +143,36 @@ def register():
         return redirect('/login')
     return render_template('register.html')
 
+
 @app.route('/dashboard')
 def dashboard():
     if 'user' not in session: return redirect('/login')
-    return render_template('dashboard.html', user=session['user'])
+    
+    user_data = session['user']
+    user_name = user_data['username'] if isinstance(user_data, dict) else user_data[1]
+    
+    # 1. Fetch live activity for others' rides
+    cursor.execute("SELECT * FROM rides WHERE username != %s AND seats > 0 ORDER BY date ASC LIMIT 3", (user_name,))
+    recent_rides = cursor.fetchall()
+    
+    # 2. Intelligence: Calculate CO2 Savings (Real-time)
+    # Logic: count how many times this user has booked a ride
+    cursor.execute("SELECT COUNT(*) as total FROM bookings WHERE passenger_username = %s", (user_name,))
+    booking_count = cursor.fetchone()['total']
+    
+    # Logic: count how many rides this user has published
+    cursor.execute("SELECT COUNT(*) as total FROM rides WHERE username = %s", (user_name,))
+    published_count = cursor.fetchone()['total']
+    
+    # 3. Aggregate Stats
+    stats = {
+        'co2_saved': round((booking_count + published_count) * 2.15, 1), # 2.15kg per ride avg
+        'network_status': "Optimal" if recent_rides else "Searching",
+        'total_nodes': booking_count + published_count
+    }
+    
+    return render_template('dashboard.html', user=session['user'], recent_rides=recent_rides, stats=stats)
+
 
 @app.route('/publish', methods=['GET', 'POST'])
 def publish():
@@ -141,7 +190,6 @@ def publish():
         seats = int(request.form.get('seats', '1'))
         manual_price = request.form.get('manual_price')
         vehicle = request.form.get('vehicle')
-        notes = request.form.get('notes')
         
         km = get_road_distance(start_lat, start_lon, dest_lat, dest_lon)
         total_price = 40 + (km * 12)
@@ -156,16 +204,15 @@ def publish():
         
         try:
             query = "INSERT INTO rides (username, leaving_from, going_to, date, time, seats, vehicle, distance_km, price_per_seat, total_price) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-            # Fix: Handle both list and dict session formats safely
             user_data = session['user']
             user_name = user_data['username'] if isinstance(user_data, dict) else user_data[1]
             
             cursor.execute(query, (user_name, leaving_from, going_to, date, time, seats, vehicle, km, price_per_seat, round(total_price, 2)))
             db.commit()
+            flash("Ride published successfully!", "success")
         except Exception as e:
             print(f"DB Error: {e}")
 
-        # CHANGE: Instead of redirecting, render the same page with the new data
         return render_template(
             'publish.html', 
             user=session['user'], 
@@ -176,7 +223,6 @@ def publish():
 
     return render_template('publish.html', user=session['user'])
 
-# --- IMPROVED FIND RIDE WITH SEARCH ---
 @app.route('/find-ride', methods=['GET', 'POST'])
 def find_ride():
     if 'user' not in session: return redirect('/login')
@@ -187,7 +233,6 @@ def find_ride():
         going_to = request.form.get('to')
         ride_date = request.form.get('date')
         
-        # Filtering logic: Only show rides with seats > 0
         if ride_date:
             query = "SELECT * FROM rides WHERE leaving_from LIKE %s AND going_to LIKE %s AND date = %s AND seats > 0 ORDER BY date ASC"
             cursor.execute(query, (f"%{leaving_from}%", f"%{going_to}%", ride_date))
@@ -201,39 +246,55 @@ def find_ride():
 
     return render_template('findride.html', user=session['user'], rides=rides)
 
-# --- NEW BOOKING ROUTE ---
+@app.route('/reserve/<int:ride_id>')
+def reserve_page(ride_id):
+    if 'user' not in session: return redirect('/login')
+    
+    query = "SELECT * FROM rides WHERE id = %s"
+    cursor.execute(query, (ride_id,))
+    ride = cursor.fetchone()
+    
+    if not ride:
+        flash("Ride not found!")
+        return redirect('/find-ride')
+        
+    return render_template('reserve.html', user=session['user'], ride=ride)
+
 @app.route('/book-ride/<int:ride_id>')
 def book_ride(ride_id):
     if 'user' not in session: return redirect('/login')
     
-    user_name = session['user'][1] if isinstance(session['user'], list) else session['user'].get('username')
+    # Identify the current logged-in user
+    user_data = session['user']
+    user_name = user_data['username'] if isinstance(user_data, dict) else user_data[1]
     
-    # Check if seats are available
+    # Check if the ride exists and has seats
     cursor.execute("SELECT username, seats FROM rides WHERE id = %s", (ride_id,))
     ride = cursor.fetchone()
     
-    if ride and ride[1] > 0:
-        if ride[0] == user_name:
-            return "You cannot book your own ride!"
+    if ride and ride['seats'] > 0:
+        # Prevent users from booking their own ride
+        if ride['username'] == user_name:
+            flash("System Error: You cannot book a node you deployed.")
+            return redirect('/find-ride')
         
-        # Update seat count
-        cursor.execute("UPDATE rides SET seats = seats - 1 WHERE id = %s", (ride_id,))
-        db.commit()
-        return redirect('/dashboard')
+        try:
+            # 1. Update Seat Count in the Rides table
+            cursor.execute("UPDATE rides SET seats = seats - 1 WHERE id = %s", (ride_id,))
+            
+            # 2. Add the transaction to the Global Ledger (Bookings table)
+            cursor.execute("INSERT INTO bookings (ride_id, passenger_username) VALUES (%s, %s)", (ride_id, user_name))
+            
+            db.commit()
+            flash("Booking Synchronized! Check your Intelligence panel.")
+            return redirect('/insights')
+        except Exception as e:
+            db.rollback()
+            print(f"Sync Error: {e}")
+            return "Database Sync Error", 500
     
-    return "No seats available!"
-
-@app.route('/otp')
-def otp(): return render_template('otp.html')
-
-@app.route('/forgot-password')
-def forgot_password():
-    return render_template('forgot-password.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect('/login')
+    flash("Network Error: No capacity left in this node.")
+    return redirect('/find-ride')
 
 @app.route('/insights')
 def insights():
@@ -242,25 +303,30 @@ def insights():
     user_data = session['user']
     user_name = user_data['username'] if isinstance(user_data, dict) else user_data[1]
 
-    # Fetch History: Join bookings and rides to show full route details
+    # Join the bookings ledger with the rides table to get full trip details
     query = """
         SELECT r.leaving_from, r.going_to, r.date, r.price_per_seat, b.status 
         FROM bookings b 
         JOIN rides r ON b.ride_id = r.id 
         WHERE b.passenger_username = %s
-        ORDER BY r.date DESC
+        ORDER BY b.booking_date DESC
     """
     cursor.execute(query, (user_name,))
     history = cursor.fetchall()
 
-    # Dynamic Analytics (Mocked for logic, replace with SUM/COUNT queries later)
+    # Calculate real-time stats
     stats = {
-        'carbon_saved': 14.2, # kg
-        'wallet_balance': 2450.00,
+        'carbon_saved': round(len(history) * 2.15, 2), # Estimated kg saved
+        'wallet_balance': 2450.00, # Placeholder for now
         'total_nodes': len(history)
     }
     
     return render_template('insights.html', user=session['user'], history=history, stats=stats)
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect('/login')
 
 if __name__ == "__main__":
     app.run(debug=True)
