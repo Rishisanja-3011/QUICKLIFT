@@ -25,7 +25,7 @@ try:
     db = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="preet.347",
+        password="Patel_2101",
         database="quicklift"
     )
     cursor = db.cursor(dictionary=True)
@@ -177,6 +177,9 @@ def dashboard():
 @app.route('/publish', methods=['GET', 'POST'])
 def publish():
     if 'user' not in session: return redirect('/login')
+    print("FORM DATA:")
+    print(request.form)
+
     
     if request.method == 'POST':
         start_lat = float(request.form.get('start_lat'))
@@ -194,24 +197,26 @@ def publish():
         km = get_road_distance(start_lat, start_lon, dest_lat, dest_lon)
         total_price = 40 + (km * 12)
         price_per_seat = round(total_price / max(seats, 1), 2)
-        
-        if manual_price:
-            try:
-                price_per_seat = float(manual_price)
-                total_price = round(price_per_seat * seats, 2)
-            except ValueError:
-                pass
+       
         
         try:
             query = "INSERT INTO rides (username, leaving_from, going_to, date, time, seats, vehicle, distance_km, price_per_seat, total_price) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             user_data = session['user']
-            user_name = user_data['username'] if isinstance(user_data, dict) else user_data[1]
+            if isinstance(user_data, dict):
+                user_name=user_data.get('username') or user_data.get('email')
+
+            else:
+
+             user_data[1]
             
             cursor.execute(query, (user_name, leaving_from, going_to, date, time, seats, vehicle, km, price_per_seat, round(total_price, 2)))
             db.commit()
             flash("Ride published successfully!", "success")
         except Exception as e:
-            print(f"DB Error: {e}")
+          print("INSERT FAILED:")
+          print (str(e))
+        
+
 
         return render_template(
             'publish.html', 
