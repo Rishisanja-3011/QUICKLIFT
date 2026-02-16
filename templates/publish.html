@@ -96,6 +96,34 @@
             .form-area { border-right: none; border-bottom: 1px solid #f1f5f9; }
             .stats-grid { grid-template-columns: 1fr; }
         }
+        .autocomplete {
+    position: relative;
+}
+
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    max-height: 180px;
+    overflow-y: auto;
+    display: none;
+    z-index: 999;
+}
+
+.sugg-item {
+    padding: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.sugg-item:hover {
+    background: #f1f5f9;
+}
+
     </style>
 </head>
 <body>
@@ -145,11 +173,19 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="input-group">
                             <label>Origin Node</label>
-                            <input type="text" name="leaving_from" id="from_city" class="input-field" placeholder="E.g. Surat" required>
+                            <div class="autocomplete">
+                                 <input type="text" name="leaving_from" id="from_city" class="input-field" placeholder="E.g. Surat" required>
+                                 <div id="from-results" class="suggestions"></div>
+
+                            </div>
+                           
                         </div>
                         <div class="input-group">
                             <label>Destination Node</label>
+                            <div class="autocomplete">
                             <input type="text" name="going_to" id="to_city" class="input-field" placeholder="E.g. Mumbai" required>
+                             <div id="to-results" class="suggestions"></div>
+                        </div>
                         </div>
                     </div>
 
@@ -243,6 +279,57 @@
                 submitBtn.disabled = false;
             }
         });
+
     </script>
+    <script>
+function initCityAutocomplete(inputId, resultsId) {
+    const input = document.getElementById(inputId);
+    const resBox = document.getElementById(resultsId);
+
+    input.addEventListener('input', async () => {
+        const val = input.value.trim();
+        if (val.length < 3) {
+            resBox.style.display = 'none';
+            return;
+        }
+
+        const url = `https://photon.komoot.io/api/?q=${val}&limit=6&bbox=68.1,7.9,97.4,35.5`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        resBox.innerHTML = '';
+        resBox.style.display = 'none';
+
+        data.features.forEach(f => {
+            const p = f.properties;
+            const name = p.name || p.city || p.state || p.country;
+            if (!name) return;
+
+            const div = document.createElement('div');
+            div.className = 'sugg-item';
+            div.innerText = name;
+
+            div.onclick = () => {
+                input.value = name;
+                resBox.style.display = 'none';
+            };
+
+            resBox.appendChild(div);
+            resBox.style.display = 'block';
+        });
+    });
+}
+
+initCityAutocomplete('from_city', 'from-results');
+initCityAutocomplete('to_city', 'to-results');
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.autocomplete')) {
+        document.querySelectorAll('.suggestions')
+            .forEach(s => s.style.display = 'none');
+    }
+});
+</script>
+
 </body>
 </html>
