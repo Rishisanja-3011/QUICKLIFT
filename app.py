@@ -28,7 +28,7 @@ try:
         password="Patel_2101",
         database="quicklift"
     )
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(dictionary=True,buffered=True)
     print("Database connected successfully!")
 except mysql.connector.Error as err:
     print(f"Database connection error: {err}")
