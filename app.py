@@ -15,7 +15,7 @@ oauth = OAuth(app) if OAuth else None
 google = oauth.register(
     name='google',
     client_id='853368867067-agsdp0bjm4c4q56j29pjrppqlh0fff63.apps.googleusercontent.com',
-    client_secret='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',
+    client_secret='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',
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'}
 ) if oauth else None
