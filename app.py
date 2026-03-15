@@ -1,4 +1,6 @@
 from flask import Flask, request, redirect, render_template, url_for, session, flash
+from flask_mail import Mail, Message
+import random
 try:
     from authlib.integrations.flask_client import OAuth
 except Exception:
@@ -8,6 +10,14 @@ import os
 import requests 
 
 app = Flask(__name__)
+# Email OTP configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'sanjarishi99@gmail.com'
+app.config['MAIL_PASSWORD'] = 'luufzfvkyplvevxo'
+
+mail = Mail(app)
 app.secret_key = "Patelbhai_here_3011"
 
 # Database connection
@@ -76,9 +86,51 @@ def google_callback():
     return redirect('/login')
 
 
-@app.route('/forgot-password')
+@app.route('/forgot-password', methods=['GET','POST'])
 def forgot_password():
-    return "Forgot Password Page - Coming Soon"
+
+    if request.method == 'POST':
+
+        email = request.form.get('email')
+
+        cursor.execute("SELECT * FROM userdata WHERE email=%s", (email,))
+        user = cursor.fetchone()
+
+        if not user:
+            return render_template("forgot-password.html", error="Email not found")
+
+        otp = generate_otp()
+
+        session['otp'] = otp
+        session['otp_type'] = "reset"
+        session['reset_email'] = email
+
+        send_otp_email(email, otp)
+
+        return render_template("otp.html")
+
+    return render_template("forgot-password.html")
+
+
+@app.route('/reset-password', methods=['GET','POST'])
+def reset_password():
+
+    if request.method == 'POST':
+
+        new_password = request.form.get('password')
+        email = session.get('reset_email')
+
+        cursor.execute(
+            "UPDATE userdata SET passwords=%s WHERE email=%s",
+            (new_password, email)
+        )
+
+        db.commit()
+
+        flash("Password updated successfully")
+        return redirect('/login')
+
+    return render_template("reset-password.html")
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -113,6 +165,16 @@ def login():
 
     return render_template('login.html')
 
+def send_otp_email(email, otp):
+    msg = Message(
+        "TripShare OTP Verification",
+        sender=app.config['MAIL_USERNAME'],
+        recipients=[email]
+    )
+
+    msg.body = f"Your OTP for TripShare verification is: {otp}"
+
+    mail.send(msg)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -136,11 +198,39 @@ def register():
         file_path = file.filename
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_path))
 
-        query = """INSERT INTO userdata (fullname, username, email, phnumber, city, gender, files, passwords)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-        cursor.execute(query, (fullname, username, email, contact, city, gender, file_path, password))
-        db.commit()
-        return redirect('/login')
+        # Store data temporarily in session
+        session['register_data'] = {
+            "fullname": fullname,
+            "username": username,
+            "email": email,
+            "contact": contact,
+            "city": city,
+            "gender": gender,
+            "file_path": file_path,
+            "password": password
+        }
+        cursor.execute(
+        "SELECT * FROM userdata WHERE username=%s OR email=%s",
+        (username,email)
+        )
+
+        existing = cursor.fetchone()
+
+        if existing:
+            return render_template("register.html",
+                           error="Username or email already exists")
+        otp = generate_otp()
+        session['otp'] = otp
+        session['otp_type'] = "register"
+        send_otp_email(email, otp)
+        return render_template("otp.html")
+
+
+        # query = """INSERT INTO userdata (fullname, username, email, phnumber, city, gender, files, passwords)
+        #            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+        # cursor.execute(query, (fullname, username, email, contact, city, gender, file_path, password))
+        # db.commit()
+        # return redirect('/login')
     return render_template('register.html')
 
 
@@ -332,6 +422,52 @@ def insights():
 def logout():
     session.pop('user', None)
     return redirect('/login')
+
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+
+@app.route('/verify-otp', methods=['POST'])
+def verify_otp():
+
+    user_otp = request.form.get('otp')
+
+    if user_otp == session.get('otp'):
+
+        if session.get('otp_type') == "register":
+
+            data = session.get('register_data')
+
+            query = """INSERT INTO userdata 
+            (fullname, username, email, phnumber, city, gender, files, passwords)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
+
+            cursor.execute(query, (
+                data['fullname'],
+                data['username'],
+                data['email'],
+                data['contact'],
+                data['city'],
+                data['gender'],
+                data['file_path'],
+                data['password']
+            ))
+
+            db.commit()
+
+            session.pop('otp', None)
+            session.pop('otp_type', None)
+            session.pop('register_data', None)
+
+            flash("Registration successful. Please login.")
+            return redirect('/login')
+
+        elif session.get('otp_type') == "reset":
+
+            return redirect('/reset-password')
+
+    else:
+        return render_template("otp.html", error="Invalid OTP")
 
 if __name__ == "__main__":
     app.run(debug=True)

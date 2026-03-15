@@ -1,49 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP - TripShare</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/style.css">
+<title>OTP Verification</title>
+<link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
-    <div class="container">
-        <div class="auth-card">
-            <a href="{{ url_for('index') }}" class="logo">Trip<span>Share</span></a>
-            
-            <div class="auth-header">
-                <h2>Verify Email</h2>
-                <p>Enter the 4-digit code sent to your email</p>
-            </div>
 
-            <div id="alertMessage" class="alert"></div>
+<div class="auth-container">
 
-            <form id="otpForm">
-                <div class="otp-container">
-                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                </div>
+<h2>Email Verification</h2>
 
-                <button type="submit" class="btn">Verify Account</button>
-            </form>
+{% if error %}
+<p style="color:red">{{error}}</p>
+{% endif %}
 
-            <div class="auth-links">
-                Didn't receive the code? <a href="#" id="resendOtp">Resend</a>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <a href="{{ url_for('login') }}" class="btn-secondary" style="display:inline-block; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; text-decoration:none;">Back to Login</a>
-            </div>
-        </div>
-    </div>
+<form action="/verify-otp" method="POST">
 
-    <script src="/static/main.js"></script>
+<div class="form-group">
+<label>Enter OTP</label>
+<input type="text" name="otp" class="form-control" required>
+</div>
+
+<button class="btn">Verify OTP</button>
+
+</form>
+
+</div>
+
 </body>
 </html>
