@@ -94,8 +94,8 @@
 
                     <div class="form-group" style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; text-align: center; background: rgba(0,0,0,0.2);">
                         <label class="form-label" style="cursor:pointer; margin:0;">
-                            <i class="fa-solid fa-upload"></i> Upload Valid ID Scan
-                            <input type="file" name="file" class="form-control" style="display: none;" required>
+                            <i class="fa-solid fa-upload"></i> <span id="fileNameDisplay">Upload Valid ID Scan</span>
+                            <input type="file" name="file" id="fileInput" class="form-control" style="display: none;" required onchange="document.getElementById('fileNameDisplay').textContent = this.files[0] ? this.files[0].name : 'Upload Valid ID Scan'">
                         </label>
                     </div>
 

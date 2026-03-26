@@ -186,7 +186,7 @@ def send_otp_email(email, otp):
         recipients=[email]
     )
 
-    msg.body = f"Your OTP for QuickLift verification is: {otp}"
+    msg.body = f"<-----------QuickLift---------->\n Your OTP for QuickLift verification is: {otp}"
 
     mail.send(msg)
 
