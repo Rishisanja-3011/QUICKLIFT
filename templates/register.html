@@ -3,149 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - TripShare</title>
+    <title>Register - QuickLift Pro</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/style.css">
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .split-left-reg {
+             background: linear-gradient(135deg, rgba(79, 172, 254, 0.9), rgba(0, 242, 254, 0.4)), url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop') center/cover;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 640px) {
+            .form-grid { grid-template-columns: 1fr; gap: 0; }
+        }
+    </style>
 </head>
 <body>
     <div class="split-screen">
-        <div class="left-pane">
-            <div class="trust-content">
-                <h1>Start Your Journey Today</h1>
-                <p>Connect with verified travelers. Save costs, travel comfortably.</p>
-                
-                <div class="stats-row">
-                    <div class="stat-item">
-                        <h3>100%</h3>
-                        <span>Verified Profiles</span>
-                    </div>
-                    <div class="stat-item">
-                        <h3>₹5Cr+</h3>
-                        <span>Money Saved</span>
-                    </div>
-                </div>
-
-                <div class="testimonial-box">
-                    <p>"The best way to travel home for festivals. I found a ride instantly and the co-travelers were amazing."</p>
-                    <div class="user-info">
-                        <div class="avatar-circle">R</div>
-                        <div class="user-details">
-                            <strong>Rahul Verma</strong>
-                            <span>Verified User • Delhi</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="active-users">
-                     <div class="user-pile">
-                         <div class="bg-4">K</div>
-                         <div class="bg-1">M</div>
-                         <div class="bg-2">J</div>
-                         <div class="bg-3">+50</div>
-                     </div>
-                     <span>500+ joined this week</span>
-                </div>
+        <div class="split-left split-left-reg">
+            <div class="split-left-content">
+               <h1 style="color: #0f172a;">Join QuickLift</h1>
+               <p style="color: rgba(15,23,42,0.8); font-size: 1.2rem; font-weight: 500;">
+                  Create your account. Every member is verified to ensure maximum security across all rides.
+               </p>
+               <div style="margin-top: 40px; display:flex; gap: 20px;">
+                    <i class="fa-solid fa-fingerprint" style="font-size: 3rem; color: #0f172a; opacity: 0.8;"></i>
+                    <i class="fa-solid fa-id-card-clip" style="font-size: 3rem; color: #0f172a; opacity: 0.8;"></i>
+               </div>
             </div>
         </div>
         
-        <div class="right-pane">
-            <div class="auth-container">
-                <a href="{{ url_for('index') }}" class="logo-dark">Trip<span>Share</span></a>
-                
-                <div class="auth-header">
-                    <h2>Join the Community</h2>
-                    <p>Start your journey with us today.</p>
+        <div class="split-right">
+            <div class="auth-form-wrapper glass-panel" style="max-width: 600px; padding: 2rem;">
+                <div style="text-align: center; margin-bottom: var(--space-lg);">
+                    <h2>Create Account</h2>
+                    <p>Enter your details to register.</p>
                 </div>
 
-                <div id="alertMessage" class="alert"></div>
                 {% if error %}
-                <div class="alert alert-error">{{ error }}</div>
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    {{ error }}
+                </div>
                 {% endif %}
-
-                <form action="/register" method="post" id="registerForm" enctype="multipart/form-data">
-                    <div style="display: flex; gap: 15px;">
-                        <div class="form-group" style="flex: 1;">
-                            <label for="fullname">Full Name</label>
-                            <input type="text" id="fullname" name="fullname" class="form-control" placeholder="e.g. Rahul Verma" >
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label for="username">Username</label>
-                            <input type="text" id="username" name="username" class="form-control" placeholder="e.g. rahul_v" >
-                        </div>
-                    </div>
-
+                
+                <form action="/register" method="post" enctype="multipart/form-data"> 
                     <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="rahul@example.com" >
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="fullname" class="form-control" required>
                     </div>
 
-                    <div style="display: flex; gap: 15px;">
-                        <div class="form-group" style="flex: 1;">
-                            <label for="contact">Mobile Number</label>
-                            <input type="tel" id="contact" name="contact" class="form-control" placeholder="+91 98765 43210" >
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" required>
                         </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label for="city">City</label>
-                            <input type="text" id="city" name="city" class="form-control" placeholder="e.g. Mumbai" >
+                        <div class="form-group">
+                            <label class="form-label">Contact Number</label>
+                            <input type="text" name="contact" class="form-control" required>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="gender">Gender (for safety preferences)</label>
-                        <select id="gender" class="form-control" name="gender" >
-                            <option value="" disabled selected>Select Gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-control" required>
                     </div>
-
-                    <div class="form-group">
-                        <label>Government ID Verification (Aadhaar/DL)</label>
-                        <div class="file-input-wrapper">
-                            <input type="file" id="authId" accept="image/*,.pdf" name="file"  >
-                            <div style="color: var(--text-muted);">
-                                <i class="fas fa-id-card" style="font-size: 24px; color: var(--primary-color); margin-bottom: 10px;"></i>
-                                <p style="font-size: 0.9rem;">Upload Aadhaar Card or Driving License</p>
-                                <p id="fileName" style="font-size: 0.8rem; margin-top: 5px; font-weight: 500; color: var(--primary-color);"></p>
-                            </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-control" required>
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Create a strong password" >
+                    <div class="form-group" style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; text-align: center; background: rgba(0,0,0,0.2);">
+                        <label class="form-label" style="cursor:pointer; margin:0;">
+                            <i class="fa-solid fa-upload"></i> Upload Valid ID Scan
+                            <input type="file" name="file" class="form-control" style="display: none;" required>
+                        </label>
                     </div>
 
-                    <div class="form-group">
-                        <label for="confirm-password">Confirm Password</label>
-                        <input type="password" id="confirm-password" name="confirm_password" class="form-control" placeholder="Confirm your password" >
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" name="confirm_password" class="form-control" required>
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn">Create Account</button>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-user-plus"></i> Register
+                    </button>
                 </form>
 
-                <div class="auth-footer">
-                    Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+                <div style="margin-top: var(--space-lg); text-align: center; font-size: 0.95rem; color: var(--color-text-secondary);">
+                    Already have an account? <a href="{{ url_for('login') }}" style="font-weight: 700;">Login Here</a>
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="/static/main.js"></script>
-    <script>
-        document.getElementById('authId').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name;
-            if(fileName) {
-                document.getElementById('fileName').textContent = "Selected: " + fileName;
-            }
-        });
-    </script>
 </body>
 </html>

@@ -25,7 +25,7 @@ oauth = OAuth(app) if OAuth else None
 google = oauth.register(
     name='google',
     client_id='853368867067-agsdp0bjm4c4q56j29pjrppqlh0fff63.apps.googleusercontent.com',
-    client_secret='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',
+    client_secret='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',
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'}
 ) if oauth else None
@@ -81,7 +81,21 @@ def google_callback():
     token = google.authorize_access_token()
     user_info = token.get('userinfo')
     if user_info:
-        session['user'] = user_info
+        cursor.execute("select * from userdata WHERE email=%s",(user_info['email'],))
+        db_user = cursor.fetchone()
+        if db_user:
+            # User exists, use their database record (which has 'username')
+            session['user'] = db_user
+         
+        else:
+            # New user: Create a compatible dictionary for the session
+            # This prevents the 'username' KeyError in your dashboard logic
+            session['user'] = {
+                'username': user_info.get('email').split('@')[0], # Fallback username
+                'fullname': user_info.get('name'),
+                'email': user_info.get('email'),
+                'is_google': True
+            }
         return redirect('/dashboard')
     return redirect('/login')
 
@@ -167,12 +181,12 @@ def login():
 
 def send_otp_email(email, otp):
     msg = Message(
-        "TripShare OTP Verification",
+        "QuickLift OTP Verification",
         sender=app.config['MAIL_USERNAME'],
         recipients=[email]
     )
 
-    msg.body = f"Your OTP for TripShare verification is: {otp}"
+    msg.body = f"Your OTP for QuickLift verification is: {otp}"
 
     mail.send(msg)
 
@@ -239,7 +253,7 @@ def dashboard():
     if 'user' not in session: return redirect('/login')
     
     user_data = session['user']
-    user_name = user_data['username'] if isinstance(user_data, dict) else user_data[1]
+    user_name = user_data.get('username') if isinstance(user_data, dict) else user_data[1]
     
     # 1. Fetch live activity for others' rides
     cursor.execute("SELECT * FROM rides WHERE username != %s AND seats > 0 ORDER BY date ASC LIMIT 3", (user_name,))
@@ -257,8 +271,8 @@ def dashboard():
     # 3. Aggregate Stats
     stats = {
         'co2_saved': round((booking_count + published_count) * 2.15, 1), # 2.15kg per ride avg
-        'network_status': "Optimal" if recent_rides else "Searching",
-        'total_nodes': booking_count + published_count
+        'network_status': "Active" if recent_rides else "Searching",
+        'total_rides': booking_count + published_count
     }
     
     return render_template('dashboard.html', user=session['user'], recent_rides=recent_rides, stats=stats)
@@ -370,25 +384,25 @@ def book_ride(ride_id):
     if ride and ride['seats'] > 0:
         # Prevent users from booking their own ride
         if ride['username'] == user_name:
-            flash("System Error: You cannot book a node you deployed.")
+            flash("System Error: You cannot book your own ride.")
             return redirect('/find-ride')
         
         try:
             # 1. Update Seat Count in the Rides table
             cursor.execute("UPDATE rides SET seats = seats - 1 WHERE id = %s", (ride_id,))
             
-            # 2. Add the transaction to the Global Ledger (Bookings table)
+            # 2. Add the transaction to the Bookings table
             cursor.execute("INSERT INTO bookings (ride_id, passenger_username) VALUES (%s, %s)", (ride_id, user_name))
             
             db.commit()
-            flash("Booking Synchronized! Check your Intelligence panel.")
+            flash("Booking Successful! Check your Insights for details.")
             return redirect('/insights')
         except Exception as e:
             db.rollback()
             print(f"Sync Error: {e}")
             return "Database Sync Error", 500
     
-    flash("Network Error: No capacity left in this node.")
+    flash("Sorry, there are no seats left for this ride.")
     return redirect('/find-ride')
 
 @app.route('/insights')
@@ -413,7 +427,7 @@ def insights():
     stats = {
         'carbon_saved': round(len(history) * 2.15, 2), # Estimated kg saved
         'wallet_balance': 2450.00, # Placeholder for now
-        'total_nodes': len(history)
+        'total_rides': len(history)
     }
     
     return render_template('insights.html', user=session['user'], history=history, stats=stats)
