@@ -94,7 +94,7 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="form-group">
                             <label class="form-label">Departure Date</label>
-                            <input type="date" name="date" class="form-control" required>
+                            <input type="date" name="date" id="ride_date" class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Departure Time</label>
@@ -155,6 +155,24 @@
 
     <!-- Scripts from original publish file -->
     <script>
+        // Set min and max dates for the date picker (Today to Today + 15 days)
+        const dateInput = document.getElementById('ride_date');
+        if (dateInput) {
+            const today = new Date();
+            const maxDate = new Date();
+            maxDate.setDate(today.getDate() + 15);
+            
+            const formatDate = (date) => {
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            };
+            
+            dateInput.min = formatDate(today);
+            dateInput.max = formatDate(maxDate);
+        }
+
         document.getElementById('rideForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');

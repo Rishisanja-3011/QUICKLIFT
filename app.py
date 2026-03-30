@@ -8,6 +8,7 @@ except Exception:
 import mysql.connector
 import os
 import requests 
+from datetime import datetime, date as dt_date, timedelta
 
 app = Flask(__name__)
 # Email OTP configuration
@@ -255,6 +256,14 @@ def dashboard():
     user_data = session['user']
     user_name = user_data.get('username') if isinstance(user_data, dict) else user_data[1]
     
+    # Auto-delete past rides
+    try:
+        cursor.execute("DELETE FROM rides WHERE date < CURDATE() OR (date = CURDATE() AND time < CURTIME())")
+        db.commit()
+    except Exception as e:
+        print("Cleanup error:", e)
+        db.rollback()
+    
     # 1. Fetch live activity for others' rides
     cursor.execute("SELECT * FROM rides WHERE username != %s AND seats > 0 ORDER BY date ASC LIMIT 3", (user_name,))
     recent_rides = cursor.fetchall()
@@ -298,6 +307,19 @@ def publish():
         manual_price = request.form.get('manual_price')
         vehicle = request.form.get('vehicle')
         
+        # Validating date limits
+        try:
+            parsed_date = datetime.strptime(date, '%Y-%m-%d').date()
+            today = dt_date.today()
+            if parsed_date < today:
+                flash("Cannot publish rides in the past.", "error")
+                return redirect('/publish')
+            if parsed_date > today + timedelta(days=15):
+                flash("Cannot publish rides more than 15 days in advance.", "error")
+                return redirect('/publish')
+        except Exception as e:
+            pass # format error handling handled differently or ignored here
+        
         km = get_road_distance(start_lat, start_lon, dest_lat, dest_lon)
         total_price = 40 + (km * 12)
         price_per_seat = round(total_price / max(seats, 1), 2)
@@ -336,6 +358,14 @@ def publish():
 def find_ride():
     if 'user' not in session: return redirect('/login')
     
+    # Auto-delete past rides
+    try:
+        cursor.execute("DELETE FROM rides WHERE date < CURDATE() OR (date = CURDATE() AND time < CURTIME())")
+        db.commit()
+    except Exception as e:
+        print("Cleanup error:", e)
+        db.rollback()
+
     rides = []
     if request.method == 'POST':
         leaving_from = request.form.get('from')
