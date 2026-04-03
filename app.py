@@ -9,6 +9,10 @@ import mysql.connector
 import os
 import requests 
 from datetime import datetime, date as dt_date, timedelta
+from flask import jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
+
 
 app = Flask(__name__)
 # Email OTP configuration
@@ -20,8 +24,10 @@ app.config['MAIL_PASSWORD'] = 'luufzfvkyplvevxo'
 
 mail = Mail(app)
 app.secret_key = "Patelbhai_here_3011"
-
-# Database connection
+scheduler = BackgroundScheduler()
+scheduler.start()
+atexit.register(lambda: scheduler.shutdown())
+#Database connection
 oauth = OAuth(app) if OAuth else None
 google = oauth.register(
     name='google',
@@ -401,39 +407,41 @@ def reserve_page(ride_id):
 
 @app.route('/book-ride/<int:ride_id>')
 def book_ride(ride_id):
-    if 'user' not in session: return redirect('/login')
-    
-    # Identify the current logged-in user
+    if 'user' not in session:
+        return redirect('/login')
+
     user_data = session['user']
     user_name = user_data['username'] if isinstance(user_data, dict) else user_data[1]
-    
-    # Check if the ride exists and has seats
+
+    if not db.is_connected():
+        db.reconnect()
+
     cursor.execute("SELECT username, seats FROM rides WHERE id = %s", (ride_id,))
     ride = cursor.fetchone()
-    
+
     if ride and ride['seats'] > 0:
-        # Prevent users from booking their own ride
         if ride['username'] == user_name:
-            flash("System Error: You cannot book your own ride.")
+            flash("You cannot book your own ride.")
             return redirect('/find-ride')
-        
+
         try:
-            # 1. Update Seat Count in the Rides table
             cursor.execute("UPDATE rides SET seats = seats - 1 WHERE id = %s", (ride_id,))
-            
-            # 2. Add the transaction to the Bookings table
-            cursor.execute("INSERT INTO bookings (ride_id, passenger_username) VALUES (%s, %s)", (ride_id, user_name))
-            
+            cursor.execute(
+                "INSERT INTO bookings (ride_id, passenger_username) VALUES (%s, %s)",
+                (ride_id, user_name)
+            )
             db.commit()
-            flash("Booking Successful! Check your Insights for details.")
-            return redirect('/insights')
+            flash("Booking Successful! Track your driver below.", "success")
+            # ← Now redirects to live tracking page instead of insights
+            return redirect(f'/track/{ride_id}')
         except Exception as e:
             db.rollback()
             print(f"Sync Error: {e}")
             return "Database Sync Error", 500
-    
-    flash("Sorry, there are no seats left for this ride.")
+
+    flash("Sorry, no seats left for this ride.")
     return redirect('/find-ride')
+
 
 @app.route('/insights')
 def insights():
@@ -512,6 +520,194 @@ def verify_otp():
 
     else:
         return render_template("otp.html", error="Invalid OTP")
+    
+@app.route('/update-location', methods=['POST'])
+def update_location():
+    """Driver's browser calls this every 5 seconds with their GPS coords."""
+    if 'user' not in session:
+        return jsonify({'error': 'unauthorized'}), 401
+
+    data = request.get_json()
+    lat = data.get('lat')
+    lon = data.get('lon')
+    user_data = session['user']
+    username = user_data.get('username') if isinstance(user_data, dict) else user_data[1]
+
+    try:
+        if not db.is_connected():
+            db.reconnect()
+        # Upsert: update if exists, insert if not
+        cursor.execute("""
+            INSERT INTO user_locations (username, latitude, longitude)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE latitude=%s, longitude=%s, updated_at=NOW()
+        """, (username, lat, lon, lat, lon))
+        db.commit()
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        print(f"Location update error: {e}")
+        return jsonify({'error': str(e)}), 500
+@app.route('/get-location/<int:ride_id>')
+def get_location(ride_id):
+    """Returns the driver's latest GPS coords for a given ride."""
+    if 'user' not in session:
+        return jsonify({'error': 'unauthorized'}), 401
+
+    try:
+        if not db.is_connected():
+            db.reconnect()
+        # Get the driver's username from the ride
+        cursor.execute("SELECT username FROM rides WHERE id = %s", (ride_id,))
+        ride = cursor.fetchone()
+        if not ride:
+            return jsonify({'error': 'ride not found'}), 404
+
+        driver_username = ride['username']
+
+        # Get their latest location
+        cursor.execute("""
+            SELECT latitude, longitude, updated_at
+            FROM user_locations
+            WHERE username = %s
+        """, (driver_username,))
+        loc = cursor.fetchone()
+
+        if loc and loc['latitude']:
+            return jsonify({
+                'lat': loc['latitude'],
+                'lon': loc['longitude'],
+                'updated_at': str(loc['updated_at'])
+            })
+        else:
+            return jsonify({'error': 'location not available yet'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+@app.route('/track/<int:ride_id>')
+def track_ride(ride_id):
+    """Live tracking page for the passenger."""
+    if 'user' not in session:
+        return redirect('/login')
+
+    try:
+        if not db.is_connected():
+            db.reconnect()
+
+        cursor.execute("SELECT * FROM rides WHERE id = %s", (ride_id,))
+        ride = cursor.fetchone()
+        if not ride:
+            flash("Ride not found.")
+            return redirect('/insights')
+
+        # Get driver's phone number for the contact info
+        cursor.execute("SELECT phnumber, fullname FROM userdata WHERE username = %s", (ride['username'],))
+        driver = cursor.fetchone()
+
+        return render_template('tracking.html',
+                               user=session['user'],
+                               ride=ride,
+                               driver=driver,
+                               ride_id=ride_id)
+    except Exception as e:
+        print(f"Track error: {e}")
+        return redirect('/insights')
+def send_ride_notifications():
+    """
+    Runs every minute. Finds rides departing in the next 5 minutes
+    and emails each booked passenger with driver location + phone.
+    """
+    try:
+        # Create a fresh connection for the scheduler thread
+        notif_db = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="Patel_2101",
+            database="quicklift"
+        )
+        notif_cursor = notif_db.cursor(dictionary=True)
+
+        # Find rides departing in 4–6 minutes from now (5-min window)
+        notif_cursor.execute("""
+            SELECT r.id, r.username, r.leaving_from, r.going_to, r.date, r.time,
+                   u.phnumber, u.fullname,
+                   ul.latitude, ul.longitude
+            FROM rides r
+            JOIN userdata u ON r.username = u.username
+            LEFT JOIN user_locations ul ON r.username = ul.username
+            WHERE r.date = CURDATE()
+              AND r.time BETWEEN ADDTIME(CURTIME(), '00:04:00')
+                             AND ADDTIME(CURTIME(), '00:06:00')
+        """)
+        upcoming_rides = notif_cursor.fetchall()
+
+        for ride in upcoming_rides:
+            # Get all passengers booked on this ride
+            notif_cursor.execute("""
+                SELECT b.passenger_username, u.email, u.fullname
+                FROM bookings b
+                JOIN userdata u ON b.passenger_username = u.username
+                WHERE b.ride_id = %s AND b.status = 'Booked'
+            """, (ride['id'],))
+            passengers = notif_cursor.fetchall()
+
+            # Build Google Maps link for driver location
+            if ride['latitude'] and ride['longitude']:
+                maps_link = f"https://www.google.com/maps?q={ride['latitude']},{ride['longitude']}"
+                location_text = f"Driver's current location: {maps_link}"
+            else:
+                maps_link = None
+                location_text = "Driver location not available yet. Please contact them directly."
+
+            # Send email to each passenger
+            for passenger in passengers:
+                try:
+                    msg = Message(
+                        subject="🚗 QuickLift — Your ride departs in 5 minutes!",
+                        sender=app.config['MAIL_USERNAME'],
+                        recipients=[passenger['email']]
+                    )
+                    msg.body = f"""
+<----------- QuickLift ----------->
+
+Hi {passenger['fullname']},
+
+Your ride is departing in approximately 5 minutes!
+
+RIDE DETAILS:
+  From  : {ride['leaving_from']}
+  To    : {ride['going_to']}
+  Driver: {ride['fullname']} (@{ride['username']})
+
+CONTACT YOUR DRIVER:
+  Phone : {ride['phnumber']}
+
+{location_text}
+
+You can also track live on QuickLift:
+  http://127.0.0.1:5000/track/{ride['id']}
+
+Safe travels!
+— QuickLift Team
+"""
+                    with app.app_context():
+                        mail.send(msg)
+                    print(f"Notification sent to {passenger['email']} for ride {ride['id']}")
+                except Exception as e:
+                    print(f"Email send error for {passenger['email']}: {e}")
+
+        notif_cursor.close()
+        notif_db.close()
+
+    except Exception as e:
+        print(f"Scheduler error: {e}")
+        # Register the job — runs every 60 seconds
+scheduler.add_job(
+    func=send_ride_notifications,
+    trigger='interval',
+    seconds=60,
+    id='ride_notification_job',
+    replace_existing=True
+)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

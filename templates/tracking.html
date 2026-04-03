@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Tracking - QuickLift</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Leaflet.js for maps — free, no API key needed -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        #map {
+            width: 100%;
+            height: 420px;
+            border-radius: 16px;
+            border: 1px solid var(--color-glass-border);
+            z-index: 1;
+        }
+        .status-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse 1.5s infinite;
+        }
+        .status-dot.offline { background: #ef4444; animation: none; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.4); }
+        }
+        .info-card {
+            background: rgba(0,242,254,0.06);
+            border: 1px solid rgba(0,242,254,0.15);
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label {
+            color: var(--color-text-secondary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-value {
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .phone-badge {
+            background: rgba(0,242,254,0.15);
+            color: var(--color-primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.2s;
+        }
+        .phone-badge:hover { background: rgba(0,242,254,0.28); }
+        .update-badge {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-top: 8px;
+            text-align: right;
+        }
+        .map-overlay-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10,18,35,0.92);
+            border: 1px solid rgba(0,242,254,0.2);
+            border-radius: 12px;
+            padding: 20px 28px;
+            text-align: center;
+            z-index: 999;
+            pointer-events: none;
+        }
+        .map-wrapper { position: relative; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="{{ url_for('dashboard') }}" class="logo">
+                <i class="fa-solid fa-route" style="color: var(--color-primary)"></i> Quick<span>Lift</span>
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('find_ride') }}" class="nav-item">Find Ride</a>
+                <a href="{{ url_for('publish') }}" class="nav-item">Publish Trip</a>
+                <a href="/insights" class="nav-item">Insights</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline" style="padding: 6px 16px; font-size: 0.85rem; border-color: var(--color-error); color: var(--color-error);">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-container container" style="max-width: 780px;">
+        
+        <!-- Header -->
+        <div style="margin-bottom: 28px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                <span class="status-dot" id="statusDot"></span>
+                <h1 style="margin: 0; font-size: 1.6rem; font-weight: 800;">Live Driver Tracking</h1>
+            </div>
+            <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">
+                Map updates every 5 seconds &nbsp;·&nbsp;
+                <span id="lastUpdate">Waiting for driver location...</span>
+            </p>
+        </div>
+
+        <!-- Live Map -->
+        <div class="map-wrapper" style="margin-bottom: 24px;">
+            <div id="map"></div>
+            <div class="map-overlay-msg" id="mapMsg">
+                <i class="fa-solid fa-location-crosshairs fa-2x" style="color: var(--color-primary); margin-bottom: 10px;"></i>
+                <p style="margin: 0; color: #fff; font-weight: 600;">Waiting for driver's location...</p>
+                <p style="margin: 4px 0 0; color: var(--color-text-muted); font-size: 0.8rem;">This updates automatically</p>
+            </div>
+        </div>
+
+        <!-- Ride Info -->
+        <div class="glass-panel" style="padding: var(--space-lg);">
+            <h3 style="margin: 0 0 18px; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--color-primary);">
+                <i class="fa-solid fa-car-side"></i> &nbsp;Ride Details
+            </h3>
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-label"><i class="fa-solid fa-location-dot"></i> &nbsp;From</span>
+                    <span class="info-value">{{ ride['leaving_from'] }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fa-solid fa-flag-checkered"></i> &nbsp;To</span>
+                    <span class="info-value">{{ ride['going_to'] }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fa-regular fa-clock"></i> &nbsp;Departure</span>
+                    <span class="info-value">{{ ride['date'] }} &nbsp;at&nbsp; {{ ride['time'] }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fa-solid fa-car"></i> &nbsp;Vehicle</span>
+                    <span class="info-value">{{ ride['vehicle'] }}</span>
+                </div>
+            </div>
+
+            <!-- Driver Contact -->
+            <h3 style="margin: 20px 0 14px; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--color-primary);">
+                <i class="fa-solid fa-user-tie"></i> &nbsp;Driver Contact
+            </h3>
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-label">Name</span>
+                    <span class="info-value">{{ driver['fullname'] if driver else ride['username'] }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Username</span>
+                    <span class="info-value" style="color: var(--color-primary);">@{{ ride['username'] }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone</span>
+                    {% if driver and driver['phnumber'] %}
+                    <a href="tel:{{ driver['phnumber'] }}" class="phone-badge">
+                        <i class="fa-solid fa-phone"></i> {{ driver['phnumber'] }}
+                    </a>
+                    {% else %}
+                    <span class="info-value" style="color: var(--color-text-muted);">Not available</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Open in Google Maps button -->
+            <a href="#" id="gmapsBtn" target="_blank"
+               style="display: none; margin-top: 10px;"
+               class="btn btn-primary btn-block">
+                <i class="fa-brands fa-google"></i> &nbsp;Open in Google Maps
+            </a>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="/insights" style="color: var(--color-text-secondary); font-size: 0.85rem; text-decoration: none;">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Insights
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const RIDE_ID = "{{ ride_id }}";
+        let map = null;
+        let driverMarker = null;
+        let mapInitialized = false;
+
+        // Custom driver icon
+        const driverIcon = L.divIcon({
+            className: '',
+            html: `<div style="
+                background: #00f2fe;
+                border: 3px solid #fff;
+                border-radius: 50%;
+                width: 36px; height: 36px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 16px;
+                box-shadow: 0 0 0 4px rgba(0,242,254,0.3);
+            ">🚗</div>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
+        });
+
+        function initMap(lat, lon) {
+            map = L.map('map', { zoomControl: true }).setView([lat, lon], 15);
+
+            // Dark tile layer (free, no API key)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors © CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            driverMarker = L.marker([lat, lon], { icon: driverIcon })
+                .addTo(map)
+                .bindPopup('<b>Your Driver</b><br>{{ ride["username"] }}')
+                .openPopup();
+
+            mapInitialized = true;
+            document.getElementById('mapMsg').style.display = 'none';
+        }
+
+        function updateMap(lat, lon) {
+            if (!mapInitialized) {
+                initMap(lat, lon);
+            } else {
+                driverMarker.setLatLng([lat, lon]);
+                // Smooth pan to new position
+                map.panTo([lat, lon], { animate: true, duration: 1 });
+            }
+
+            // Update Google Maps link
+            const gmapsBtn = document.getElementById('gmapsBtn');
+            gmapsBtn.href = `https://www.google.com/maps?q=${lat},${lon}`;
+            gmapsBtn.style.display = 'block';
+        }
+
+        function fetchDriverLocation() {
+            fetch(`/get-location/${RIDE_ID}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.lat && data.lon) {
+                        updateMap(data.lat, data.lon);
+
+                        // Update status
+                        document.getElementById('statusDot').classList.remove('offline');
+                        const t = new Date(data.updated_at);
+                        document.getElementById('lastUpdate').textContent =
+                            `Last updated: ${t.toLocaleTimeString()}`;
+                    } else {
+                        document.getElementById('statusDot').classList.add('offline');
+                        document.getElementById('lastUpdate').textContent =
+                            'Waiting for driver to share location...';
+                    }
+                })
+                .catch(err => {
+                    console.error('Location fetch error:', err);
+                    document.getElementById('statusDot').classList.add('offline');
+                });
+        }
+
+        // Poll every 5 seconds
+        fetchDriverLocation();
+        setInterval(fetchDriverLocation, 5000);
+    </script>
+
+    <!-- Driver Location Beacon (only runs if this user IS the driver) -->
+    {% if user.get('username') == ride['username'] %}
+    <script>
+        // If you're the driver viewing this page, we push your GPS location
+        function pushDriverLocation() {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(pos => {
+                fetch('/update-location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        lat: pos.coords.latitude,
+                        lon: pos.coords.longitude
+                    })
+                });
+            });
+        }
+        pushDriverLocation();
+        setInterval(pushDriverLocation, 5000);
+    </script>
+    {% endif %}
+
+</body>
+</html>

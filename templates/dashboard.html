@@ -114,4 +114,25 @@
         </div>
     </div>
 </body>
+<script>
+// Passive driver beacon — runs on dashboard for logged-in users
+// Sends GPS every 10 seconds silently in the background
+function sendLocationBeacon() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(pos => {
+        fetch('/update-location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude
+            })
+        }).catch(() => {});  // silent fail
+    }, () => {});  // silent fail if user denies
+}
+
+// Ask for permission once on page load, then keep refreshing
+sendLocationBeacon();
+setInterval(sendLocationBeacon, 10000);
+</script>
 </html>
