@@ -109,7 +109,10 @@
                         <a href="/track/{{ b['ride_id'] }}" class="btn-track">
                             <i class="fa-solid fa-location-crosshairs"></i> Track
                         </a>
-                        <button class="btn-danger" onclick="showUnbookModal"({{ b['booking_id'] }}, '{{ b['leaving_from']|replace("'", "\\'")|e }}', '{{ b['going_to']|replace("'", "\\'")|e }}')">
+                        <button class="btn-danger btn-unbook"
+                            data-booking-id="{{ b['booking_id'] }}"
+                            data-from="{{ b['leaving_from'] }}"
+                            data-to="{{ b['going_to'] }}">
                             <i class="fa-solid fa-xmark"></i> Unbook
                         </button>
                     </div>
@@ -152,7 +155,11 @@
                         <a href="/ride-passengers/{{ r['id'] }}" class="btn-passengers">
                             <i class="fa-solid fa-users"></i> Passengers
                         </a>
-                        <button class="btn-danger" onclick="showCancelModal"({{ r['id'] }}, '{{ r['leaving_from']|replace("'", "\\'")|e }}', '{{ r['going_to']|replace("'", "\\'")|e }}', {{ r['passenger_count'] }})">
+                        <button class="btn-danger btn-cancel"
+                            data-ride-id="{{ r['id'] }}"
+                            data-from="{{ r['leaving_from'] }}"
+                            data-to="{{ r['going_to'] }}"
+                            data-count="{{ r['passenger_count'] }}">
                             <i class="fa-solid fa-ban"></i> Cancel
                         </button>
                     </div>
@@ -194,36 +201,56 @@
         </div>
     </div>
 
-    <!-- Hidden forms submitted programmatically — this is the key fix -->
+    <!-- Hidden forms submitted programmatically -->
     <form id="unbookForm" method="POST" action="" style="display:none;"></form>
     <form id="cancelForm" method="POST" action="" style="display:none;"></form>
 
     <script>
-        function showUnbookModal(bookingId, from, to) {
-            document.getElementById('unbookDesc').innerHTML =
-                `Are you sure you want to unbook <strong style="color:#fff">${from} → ${to}</strong>?<br>The seat will be released back to the driver.`;
-            document.getElementById('unbookForm').action = `/unbook/${bookingId}`;
-            document.getElementById('unbookModal').classList.add('active');
-        }
-        function showCancelModal(rideId, from, to, passengerCount) {
-            const note = passengerCount > 0
-                ? `<br><span style="color:#ef4444;">${passengerCount} passenger(s) will be notified by email.</span>`
-                : `<br>No passengers have booked this ride yet.`;
-            document.getElementById('cancelDesc').innerHTML =
-                `Are you sure you want to cancel <strong style="color:#fff">${from} → ${to}</strong>?${note}`;
-            document.getElementById('cancelForm').action = `/cancel-ride/${rideId}`;
-            document.getElementById('cancelModal').classList.add('active');
-        }
+        // Read data from data-* attributes — zero quote issues
+        document.querySelectorAll('.btn-unbook').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var bookingId = this.getAttribute('data-booking-id');
+                var from      = this.getAttribute('data-from');
+                var to        = this.getAttribute('data-to');
+
+                document.getElementById('unbookDesc').innerHTML =
+                    'Are you sure you want to unbook <strong style="color:#fff">' + from + ' → ' + to + '</strong>?<br>The seat will be released back to the driver.';
+                document.getElementById('unbookForm').action = '/unbook/' + bookingId;
+                document.getElementById('unbookModal').classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.btn-cancel').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var rideId = this.getAttribute('data-ride-id');
+                var from   = this.getAttribute('data-from');
+                var to     = this.getAttribute('data-to');
+                var count  = parseInt(this.getAttribute('data-count'));
+
+                var note = count > 0
+                    ? '<br><span style="color:#ef4444;">' + count + ' passenger(s) will be notified by email.</span>'
+                    : '<br>No passengers have booked this ride yet.';
+
+                document.getElementById('cancelDesc').innerHTML =
+                    'Are you sure you want to cancel <strong style="color:#fff">' + from + ' → ' + to + '</strong>?' + note;
+                document.getElementById('cancelForm').action = '/cancel-ride/' + rideId;
+                document.getElementById('cancelModal').classList.add('active');
+            });
+        });
+
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
         }
+
         document.getElementById('unbookConfirmBtn').addEventListener('click', function() {
             document.getElementById('unbookForm').submit();
         });
+
         document.getElementById('cancelConfirmBtn').addEventListener('click', function() {
             document.getElementById('cancelForm').submit();
         });
-        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+
+        document.querySelectorAll('.modal-backdrop').forEach(function(backdrop) {
             backdrop.addEventListener('click', function(e) {
                 if (e.target === this) this.classList.remove('active');
             });
