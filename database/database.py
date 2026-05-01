@@ -40,6 +40,7 @@ query = """CREATE TABLE IF NOT EXISTS  rides (
     distance_km DECIMAL(10,2),
     price_per_seat DECIMAL(10,2),
     total_price DECIMAL(10,2),
+    reminder_sent TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )"""
 cursor.execute("""
@@ -52,7 +53,20 @@ CREATE TABLE IF NOT EXISTS bookings (
     FOREIGN KEY (ride_id) REFERENCES rides(id) ON DELETE CASCADE
 )
 """)
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS user_locations (
+    username VARCHAR(255) PRIMARY KEY,
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+)""")
 cursor.execute(query)
+try:
+    cursor.execute("ALTER TABLE rides ADD COLUMN reminder_sent TINYINT(1) NOT NULL DEFAULT 0")
+except mysql.connector.Error as err:
+    if err.errno != 1060:
+        raise
 db.commit()
 
 

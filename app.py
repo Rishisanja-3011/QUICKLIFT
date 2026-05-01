@@ -606,8 +606,9 @@ def send_ride_notifications():
                    u.phnumber, u.fullname, ul.latitude, ul.longitude
             FROM rides r JOIN userdata u ON r.username = u.username
             LEFT JOIN user_locations ul ON r.username = ul.username
-            WHERE r.date = CURDATE()
-              AND r.time BETWEEN ADDTIME(CURTIME(), '00:04:00') AND ADDTIME(CURTIME(), '00:06:00')
+            WHERE TIMESTAMP(r.date, r.time) > NOW()
+              AND TIMESTAMP(r.date, r.time) <= DATE_ADD(NOW(), INTERVAL 5 MINUTE)
+              AND r.reminder_sent = 0
         """)
         upcoming_rides = notif_cursor.fetchall()
         for ride in upcoming_rides:
@@ -630,12 +631,26 @@ def send_ride_notifications():
                     with app.app_context(): mail.send(msg)
                 except Exception as e:
                     print(f"Email error for {passenger['email']}: {e}")
+            notif_cursor.execute("UPDATE rides SET reminder_sent = 1 WHERE id = %s", (ride['id'],))
+            notif_db.commit()
         notif_cursor.close(); notif_db.close()
     except Exception as e:
         print(f"Scheduler error: {e}")
 
+def cleanup_expired_rides():
+    try:
+        cleanup_db = mysql.connector.connect(**DB_CONFIG)
+        cleanup_cursor = cleanup_db.cursor()
+        cleanup_cursor.execute("DELETE FROM rides WHERE TIMESTAMP(date, time) < NOW()")
+        cleanup_db.commit()
+        cleanup_cursor.close(); cleanup_db.close()
+    except Exception as e:
+        print(f"Ride cleanup error: {e}")
+
 scheduler.add_job(func=send_ride_notifications, trigger='interval', seconds=60,
                   id='ride_notification_job', replace_existing=True)
+scheduler.add_job(func=cleanup_expired_rides, trigger='interval', seconds=60,
+                  id='expired_ride_cleanup_job', replace_existing=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
