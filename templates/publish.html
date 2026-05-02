@@ -144,7 +144,7 @@
                     <h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem;"><i class="fa-solid fa-circle-info" style="color: var(--color-primary)"></i> Posting Guidelines</h4>
                     <ul style="padding-left:20px; color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: 20px;">
                         <li style="margin-bottom: 8px;">Ensure city names are accurate.</li>
-                        <li style="margin-bottom: 8px;">Distance sync uses the OSRM Driving algorithm.</li>
+                        <li style="margin-bottom: 8px;">Distance sync uses OSRM and via stops are extracted automatically.</li>
                         <li style="margin-bottom: 8px;">Base rate calculated at ₹40 + ₹12/km.</li>
                         <li>Confirmed rides are posted automatically.</li>
                     </ul>
@@ -181,7 +181,7 @@
             const submitBtn = document.getElementById('submitBtn');
             const originalText = submitBtn.innerHTML;
             
-            submitBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Calculating Route...";
+            submitBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Extracting Route Stops...";
             submitBtn.disabled = true;
             
             const fromCity = document.getElementById('from_city').value;
@@ -189,9 +189,11 @@
 
             async function getCoords(city) {
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city}`);
+                    const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(city)}&limit=1&bbox=68.1,7.9,97.4,35.5`);
                     const data = await res.json();
-                    return data.length > 0 ? { lat: data[0].lat, lon: data[0].lon } : null;
+                    if (!data.features || data.features.length === 0) return null;
+                    const coords = data.features[0].geometry.coordinates;
+                    return { lat: coords[1], lon: coords[0] };
                 } catch (error) {
                     return null;
                 }

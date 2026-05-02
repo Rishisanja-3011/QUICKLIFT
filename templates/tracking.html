@@ -153,12 +153,18 @@
                 <div class="info-card">
                     <div class="info-row">
                         <span class="info-label"><i class="fa-solid fa-location-dot"></i> &nbsp;From</span>
-                        <span class="info-value">{{ ride['leaving_from'] }}</span>
+                        <span class="info-value">{{ booking['pickup_name'] if booking and booking['pickup_name'] else ride['leaving_from'] }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label"><i class="fa-solid fa-flag-checkered"></i> &nbsp;To</span>
-                        <span class="info-value">{{ ride['going_to'] }}</span>
+                        <span class="info-value">{{ booking['drop_name'] if booking and booking['drop_name'] else ride['going_to'] }}</span>
                     </div>
+                    {% if booking %}
+                    <div class="info-row">
+                        <span class="info-label"><i class="fa-solid fa-road"></i> &nbsp;Segment</span>
+                        <span class="info-value">{{ booking['segment_distance_km'] }} km &nbsp;·&nbsp; &#8377;{{ "%.2f"|format(booking['booked_price']|float) }}</span>
+                    </div>
+                    {% endif %}
                     <div class="info-row">
                         <span class="info-label"><i class="fa-regular fa-clock"></i> &nbsp;Departure</span>
                         <span class="info-value">{{ ride['date'] }} &nbsp;at&nbsp; {{ ride['time'] }}</span>

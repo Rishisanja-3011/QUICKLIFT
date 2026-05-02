@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Ride - QuickLift Pro</title>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .mini-stops { display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;margin-bottom:10px; }
+        .mini-stop { color:var(--color-text-secondary);font-size:0.76rem;font-weight:700;background:rgba(255,255,255,0.05);border:1px solid var(--color-glass-border);border-radius:999px;padding:4px 9px; }
+        .segment-pill { color:#10b981;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:999px;padding:4px 10px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:8px;margin-bottom:10px; }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -21,8 +24,8 @@
                 <a href="{{ url_for('publish') }}" class="nav-item">Publish Trip</a>
                 <a href="/insights" class="nav-item">Insights</a>
                 <a href="/profile/{{ user['username'] }}" class="nav-item">
-    <i class="fa-solid fa-circle-user"></i> Profile
-</a>
+                    <i class="fa-solid fa-circle-user"></i> Profile
+                </a>
                 <a href="{{ url_for('logout') }}" class="btn btn-outline" style="padding: 6px 16px; font-size: 0.85rem; border-color: var(--color-error); color: var(--color-error);">Logout</a>
             </div>
         </div>
@@ -31,18 +34,22 @@
     <div class="app-container container">
         <div class="page-header" style="text-align: left; margin-bottom: var(--space-xl);">
             <h1 class="page-header-title">Find a Ride</h1>
-            <p>Search for verified rides to your destination.</p>
+            <p>Search any pickup and drop point along a published route.</p>
         </div>
 
         <div class="glass-panel" style="margin-bottom: var(--space-xl); padding: var(--space-md);">
             <form action="/find-ride" method="POST" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
                 <div style="flex: 1; min-width: 200px;">
-                    <label class="form-label" style="font-size: 0.75rem;">Leaving From</label>
+                    <label class="form-label" style="font-size: 0.75rem;">Pickup Point</label>
                     <input type="text" name="from" class="form-control" placeholder="E.g. Pune">
                 </div>
                 <div style="flex: 1; min-width: 200px;">
-                    <label class="form-label" style="font-size: 0.75rem;">Going To</label>
+                    <label class="form-label" style="font-size: 0.75rem;">Drop Point</label>
                     <input type="text" name="to" class="form-control" placeholder="E.g. Mumbai">
+                </div>
+                <div style="min-width: 170px;">
+                    <label class="form-label" style="font-size: 0.75rem;">Date</label>
+                    <input type="date" name="date" class="form-control">
                 </div>
                 <div>
                     <button type="submit" class="btn btn-primary" style="padding: 14px 24px;">
@@ -70,21 +77,51 @@
                         <div style="font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 8px;">
                             <i class="far fa-clock" style="color: var(--color-primary); margin-right: 8px;"></i> {{ ride['time'] }}
                         </div>
-                        <div style="font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                            {{ ride['leaving_from'] }} 
+                        <div style="font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; flex-wrap:wrap;">
+                            {{ ride['leaving_from'] }}
                             <i class="fa-solid fa-arrow-right-long" style="color: var(--color-text-muted);"></i>
                             {{ ride['going_to'] }}
                         </div>
+
+                        {% if ride.get('matched_pickup_name') and ride.get('matched_drop_name') %}
+                        <div class="segment-pill">
+                            <i class="fa-solid fa-location-dot"></i>
+                            {{ ride['matched_pickup_name'] }} &rarr; {{ ride['matched_drop_name'] }}
+                        </div>
+                        {% endif %}
+
+                        {% if ride.get('stops') %}
+                        <div class="mini-stops">
+                            {% for stop_name in ride['stops'][:6] %}
+                            <span class="mini-stop">{{ stop_name }}</span>
+                            {% endfor %}
+                            {% if ride['stops']|length > 6 %}
+                            <span class="mini-stop">+{{ ride['stops']|length - 6 }} more</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
                         <div class="route-meta">
                             <span><i class="fa-solid fa-user-astronaut"></i> Driver: {{ ride['username'] }}</span>
                             <span class="badge badge-info">{{ ride['seats'] }} capacity left</span>
+                            {% if ride.get('segment_distance_km') %}
+                            <span><i class="fa-solid fa-road"></i> {{ ride['segment_distance_km'] }} km segment</span>
+                            {% endif %}
                         </div>
                     </div>
-                    
+
                     <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
-                        <div style="font-size: 0.8rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Verified Rate</div>
-                        <div style="font-size: 2rem; font-weight: 900; color: #fff; line-height: 1;">₹{{ ride['price_per_seat'] }}</div>
+                        <div style="font-size: 0.8rem; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">
+                            {{ 'Segment Fare' if ride.get('segment_price') else 'Verified Rate' }}
+                        </div>
+                        <div style="font-size: 2rem; font-weight: 900; color: #fff; line-height: 1;">
+                            &#8377;{{ "%.2f"|format((ride.get('segment_price') or ride['price_per_seat'])|float) }}
+                        </div>
+                        {% if ride.get('matched_pickup_stop_id') and ride.get('matched_drop_stop_id') %}
+                        <a href="{{ url_for('reserve_page', ride_id=ride['id'], pickup_stop_id=ride['matched_pickup_stop_id'], drop_stop_id=ride['matched_drop_stop_id']) }}" class="btn btn-primary">Reserve Seat</a>
+                        {% else %}
                         <a href="{{ url_for('reserve_page', ride_id=ride['id']) }}" class="btn btn-primary">Reserve Seat</a>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}

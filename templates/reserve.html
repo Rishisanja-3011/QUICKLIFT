@@ -4,11 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirm Booking - QuickLift Pro</title>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .booking-layout { display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start; }
+        .route-summary-row { display:flex;justify-content:space-between;gap:20px;margin-bottom:18px;border-bottom:1px solid var(--color-glass-border);padding-bottom:12px; }
+        .route-summary-row span:first-child { color:var(--color-text-secondary);font-size:0.78rem;font-weight:700;text-transform:uppercase; }
+        .route-summary-row span:last-child { color:#fff;font-weight:800;text-align:right; }
+        .stop-timeline { display:flex;flex-direction:column;gap:0;margin-top:14px; }
+        .stop-item { display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;align-items:start;position:relative;padding-bottom:14px; }
+        .stop-item:not(:last-child)::before { content:"";position:absolute;left:13px;top:24px;bottom:-2px;width:2px;background:rgba(0,242,254,0.22); }
+        .stop-dot { width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,242,254,0.12);border:1px solid rgba(0,242,254,0.35);color:var(--color-primary);font-size:0.72rem;z-index:1; }
+        .stop-name { color:#fff;font-weight:800;line-height:1.25; }
+        .stop-distance { color:var(--color-text-secondary);font-size:0.78rem;font-weight:700;white-space:nowrap; }
+        .fare-box { background:rgba(0,242,254,0.1);border:1px solid rgba(0,242,254,0.2);border-radius:12px;padding:20px;text-align:center;margin-top:22px; }
+        .fare-label { color:var(--color-primary);font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:1px; }
+        .fare-value { font-size:2.3rem;font-weight:900;color:#fff;line-height:1.1;margin-top:6px; }
+        .fare-distance { color:var(--color-text-secondary);font-size:0.84rem;margin-top:6px;font-weight:600; }
+        @media (max-width: 900px) { .booking-layout { grid-template-columns:1fr; } }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -25,49 +40,170 @@
         </div>
     </nav>
 
-    <div class="app-container container" style="display: flex; justify-content: center; align-items: flex-start;">
-        <div class="glass-panel" style="width: 100%; max-width: 500px; padding: 0; overflow: hidden;">
-            <div style="background: rgba(15,23,42,0.9); padding: var(--space-xl); text-align: center; border-bottom: 1px solid var(--color-glass-border);">
-                <i class="fa-solid fa-receipt fa-3x" style="color: var(--color-primary); margin-bottom: 15px;"></i>
-                <h2 style="margin: 0;">Reservation Summary</h2>
-            </div>
-            
-            <div style="padding: var(--space-xl);">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--color-glass-border); padding-bottom: 10px;">
-                    <span style="color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Leaving From</span>
-                    <span style="color: #fff; font-weight: 700;">{{ ride['leaving_from'] }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--color-glass-border); padding-bottom: 10px;">
-                    <span style="color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Going To</span>
-                    <span style="color: #fff; font-weight: 700;">{{ ride['going_to'] }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--color-glass-border); padding-bottom: 10px;">
-                    <span style="color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Vehicle</span>
-                    <span style="color: #fff; font-weight: 700;">{{ ride['vehicle'] }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--color-glass-border); padding-bottom: 10px;">
-                    <span style="color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Driver Username</span>
-                    <span style="color: var(--color-primary); font-weight: 700;">@{{ ride['username'] }}</span>
+    <div class="app-container container">
+        <a href="/find-ride" style="display:inline-flex;align-items:center;gap:8px;color:var(--color-text-secondary);font-size:0.88rem;font-weight:700;text-decoration:none;margin-bottom:22px;">
+            <i class="fa-solid fa-arrow-left"></i> Back to rides
+        </a>
+
+        <div class="booking-layout">
+            <div class="glass-panel">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;">
+                    <div>
+                        <h2 style="margin:0;color:#fff;">Reservation Summary</h2>
+                        <p style="margin:6px 0 0;color:var(--color-text-secondary);font-size:0.9rem;">Select where you board and leave this ride.</p>
+                    </div>
+                    <i class="fa-solid fa-receipt fa-2x" style="color:var(--color-primary);"></i>
                 </div>
 
-                <div style="background: rgba(0,242,254,0.1); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid rgba(0,242,254,0.2); margin-top: 30px;">
-                    <span style="color: var(--color-primary); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Payable Amount</span>
-                    <div style="font-size: 2.5rem; font-weight: 900; color: #fff;">₹{{ ride['price_per_seat'] }}</div>
+                <div class="route-summary-row">
+                    <span>Full Route</span>
+                    <span>{{ ride['leaving_from'] }} &rarr; {{ ride['going_to'] }}</span>
+                </div>
+                <div class="route-summary-row">
+                    <span>Vehicle</span>
+                    <span>{{ ride['vehicle'] }}</span>
+                </div>
+                <div class="route-summary-row">
+                    <span>Driver</span>
+                    <span style="color:var(--color-primary);">@{{ ride['username'] }}</span>
+                </div>
+                <div class="route-summary-row">
+                    <span>Seats Left</span>
+                    <span>{{ ride['seats'] }}</span>
                 </div>
 
-                <form action="{{ url_for('book_ride', ride_id=ride['id']) }}" method="GET" style="margin-top: 30px;">
-                    <button type="submit" class="btn btn-primary btn-block" style="padding: 18px; font-size: 1.1rem;">
+                <form action="{{ url_for('book_ride', ride_id=ride['id']) }}" method="POST" style="margin-top:24px;">
+                    {% if stops and stops|length > 1 %}
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+                        <div class="form-group">
+                            <label class="form-label">Pickup Point</label>
+                            <select name="pickup_stop_id" id="pickupStop" class="form-control" required>
+                                {% for stop in stops %}
+                                <option value="{{ stop['id'] }}"
+                                        data-distance="{{ stop['distance_from_start'] }}"
+                                        {% if stop['id'] == selected_pickup_id %}selected{% endif %}>
+                                    {{ stop['stop_name'] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Drop Point</label>
+                            <select name="drop_stop_id" id="dropStop" class="form-control" required>
+                                {% for stop in stops %}
+                                <option value="{{ stop['id'] }}"
+                                        data-distance="{{ stop['distance_from_start'] }}"
+                                        {% if stop['id'] == selected_drop_id %}selected{% endif %}>
+                                    {{ stop['stop_name'] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success" style="margin:0;">
+                        <i class="fa-solid fa-route"></i> This older ride uses the full direct route.
+                    </div>
+                    {% endif %}
+
+                    <div class="fare-box">
+                        <div class="fare-label">Payable Amount</div>
+                        <div class="fare-value">&#8377;<span id="fareAmount">{{ "%.2f"|format(segment_price|float) }}</span></div>
+                        <div class="fare-distance"><span id="fareDistance">{{ selected_segment['segment_distance_km'] if selected_segment else ride['distance_km'] }}</span> km selected</div>
+                    </div>
+
+                    <button type="submit" id="confirmBtn" class="btn btn-primary btn-block" style="padding:18px;font-size:1.05rem;margin-top:22px;">
                         <i class="fa-solid fa-check"></i> Confirm Booking
                     </button>
                 </form>
-
-                <div style="text-align: center; margin-top: 20px;">
-                    <a href="/find-ride" style="color: var(--color-text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
-                        <i class="fa-solid fa-arrow-left"></i> Cancel Booking
-                    </a>
-                </div>
             </div>
+
+            <aside class="glass-panel">
+                <h3 style="margin:0 0 14px;color:#fff;font-size:1rem;text-transform:uppercase;letter-spacing:1px;">
+                    <i class="fa-solid fa-map-location-dot" style="color:var(--color-primary);"></i> Route Stops
+                </h3>
+                {% if stops %}
+                <div class="stop-timeline">
+                    {% for stop in stops %}
+                    <div class="stop-item">
+                        <div class="stop-dot">{{ loop.index }}</div>
+                        <div class="stop-name">{{ stop['stop_name'] }}</div>
+                        <div class="stop-distance">
+                            {{ "%.1f"|format(stop['distance_from_start']|float) }} km
+                            {% if ride['duration_minutes'] and ride['distance_km'] %}
+                            &middot; +{{ (((stop['distance_from_start']|float) / (ride['distance_km']|float)) * (ride['duration_minutes']|float))|round|int }} min
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="stop-timeline">
+                    <div class="stop-item">
+                        <div class="stop-dot">1</div>
+                        <div class="stop-name">{{ ride['leaving_from'] }}</div>
+                        <div class="stop-distance">0 km</div>
+                    </div>
+                    <div class="stop-item">
+                        <div class="stop-dot">2</div>
+                        <div class="stop-name">{{ ride['going_to'] }}</div>
+                        <div class="stop-distance">{{ ride['distance_km'] }} km</div>
+                    </div>
+                </div>
+                {% endif %}
+            </aside>
         </div>
     </div>
+
+    <script>
+        const totalDistance = Number("{{ ride['distance_km'] or 0 }}");
+        const fullSeatPrice = Number("{{ ride['price_per_seat'] or 0 }}");
+        const pickupSelect = document.getElementById('pickupStop');
+        const dropSelect = document.getElementById('dropStop');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const fareAmount = document.getElementById('fareAmount');
+        const fareDistance = document.getElementById('fareDistance');
+
+        function selectedDistance(select) {
+            if (!select || !select.selectedOptions.length) return 0;
+            return Number(select.selectedOptions[0].dataset.distance || 0);
+        }
+
+        function syncDropOptions() {
+            if (!pickupSelect || !dropSelect) return;
+            const pickupDistance = selectedDistance(pickupSelect);
+            let hasValidSelection = false;
+
+            Array.from(dropSelect.options).forEach(option => {
+                const dropDistance = Number(option.dataset.distance || 0);
+                const valid = dropDistance > pickupDistance;
+                option.disabled = !valid;
+                if (valid && option.selected) hasValidSelection = true;
+            });
+
+            if (!hasValidSelection) {
+                const nextOption = Array.from(dropSelect.options).find(option => !option.disabled);
+                if (nextOption) nextOption.selected = true;
+            }
+        }
+
+        function updateFare() {
+            if (!pickupSelect || !dropSelect) return;
+            syncDropOptions();
+            const pickupDistance = selectedDistance(pickupSelect);
+            const dropDistance = selectedDistance(dropSelect);
+            const segmentDistance = Math.max(0, dropDistance - pickupDistance);
+            const price = totalDistance > 0 ? (segmentDistance / totalDistance) * fullSeatPrice : fullSeatPrice;
+            fareAmount.textContent = price.toFixed(2);
+            fareDistance.textContent = segmentDistance.toFixed(2);
+            confirmBtn.disabled = segmentDistance <= 0;
+        }
+
+        if (pickupSelect && dropSelect) {
+            pickupSelect.addEventListener('change', updateFare);
+            dropSelect.addEventListener('change', updateFare);
+            updateFare();
+        }
+    </script>
 </body>
 </html>

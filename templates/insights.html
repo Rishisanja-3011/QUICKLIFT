@@ -93,26 +93,27 @@
                 <div class="ride-card">
                     <div style="flex:1;min-width:0;">
                         <div class="ride-route">
-                            {{ b['leaving_from'] }}
+                            {{ b['booking_from'] }}
                             <i class="fa-solid fa-arrow-right-long" style="color:var(--color-text-muted);font-size:0.9rem;"></i>
-                            {{ b['going_to'] }}
+                            {{ b['booking_to'] }}
                         </div>
                         <div class="ride-meta">
                             <span><i class="fa-regular fa-calendar"></i> {{ b['date'] }}</span>
                             <span><i class="fa-regular fa-clock"></i> {{ b['time'] }}</span>
                             <span><i class="fa-solid fa-car"></i> {{ b['vehicle'] }}</span>
                             <span><i class="fa-solid fa-user-astronaut"></i> @{{ b['driver_username'] }}</span>
+                            <span><i class="fa-solid fa-road"></i> {{ b['booked_distance_km'] }} km</span>
                         </div>
                     </div>
                     <div class="card-actions">
-                        <div class="price-tag">₹{{ b['price_per_seat'] }}</div>
+                        <div class="price-tag">&#8377;{{ "%.2f"|format(b['booked_price']|float) }}</div>
                         <a href="/track/{{ b['ride_id'] }}" class="btn-track">
                             <i class="fa-solid fa-location-crosshairs"></i> Track
                         </a>
                         <button class="btn-danger btn-unbook"
                             data-booking-id="{{ b['booking_id'] }}"
-                            data-from="{{ b['leaving_from'] }}"
-                            data-to="{{ b['going_to'] }}">
+                            data-from="{{ b['booking_from'] }}"
+                            data-to="{{ b['booking_to'] }}">
                             <i class="fa-solid fa-xmark"></i> Unbook
                         </button>
                     </div>
