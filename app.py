@@ -13,24 +13,28 @@ import requests
 from datetime import datetime, date as dt_date, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
+from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash, check_password_hash
+
+load_dotenv()
 
 app = Flask(__name__)
 
 # ── Email config ──────────────────────────────────────────────
-app.config['MAIL_SERVER']   = 'smtp.gmail.com'
-app.config['MAIL_PORT']     = 587
-app.config['MAIL_USE_TLS']  = True
-app.config['MAIL_USERNAME'] = 'sanjarishi99@gmail.com'
-app.config['MAIL_PASSWORD'] = 'luufzfvkyplvevxo'
+app.config['MAIL_SERVER']   = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT']     = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS']  = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
-app.secret_key = "Patelbhai_here_3011"
+app.secret_key = os.getenv('FLASK_SECRET_KEY', "Patelbhai_here_3011")
 
 # ── DB config ─────────────────────────────────────────────────
 DB_CONFIG = {
-    "host":     "localhost",
-    "user":     "root",
-    "password": "Patel_2101",
-    "database": "quicklift"
+    "host":     os.getenv('DB_HOST', "localhost"),
+    "user":     os.getenv('DB_USER', "root"),
+    "password": os.getenv('DB_PASSWORD', "Patel_2101"),
+    "database": os.getenv('DB_NAME', "quicklift")
 }
 
 ROUTE_SAMPLE_EVERY_KM = float(os.getenv("ROUTE_SAMPLE_EVERY_KM", "15"))
@@ -57,8 +61,8 @@ def close_db(exception=None):
 oauth  = OAuth(app) if OAuth else None
 google = oauth.register(
     name='google',
-    client_id='853368867067-agsdp0bjm4c4q56j29pjrppqlh0fff63.apps.googleusercontent.com',
-    client_secret='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',
+    client_id=os.getenv('GOOGLE_CLIENT_ID'),
+    client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'}
 ) if oauth else None
@@ -612,11 +616,18 @@ def login():
             return render_template('login.html', error="All fields required")
         try:
             db, cursor = get_db()
-            cursor.execute("SELECT * FROM userdata WHERE username=%s AND passwords=%s", (username, password))
+            cursor.execute("SELECT * FROM userdata WHERE username=%s", (username,))
             result = cursor.fetchone()
             if result:
-                session['user'] = result
-                return redirect('/dashboard')
+                is_valid = False
+                if result['passwords'].startswith('scrypt:') or result['passwords'].startswith('pbkdf2:'):
+                    is_valid = check_password_hash(result['passwords'], password)
+                else:
+                    is_valid = (result['passwords'] == password)
+                
+                if is_valid:
+                    session['user'] = result
+                    return redirect('/dashboard')
             return render_template('login.html', error="Invalid username or password")
         except Exception as e:
             print(f"Login Error: {e}")
@@ -682,6 +693,7 @@ def verify_otp():
     if user_otp == session.get('otp'):
         if session.get('otp_type') == "register":
             data = session.get('register_data')
+            hashed_password = generate_password_hash(data['password'])
             db, cursor = get_db()
             cursor.execute(
                 """INSERT INTO userdata
@@ -689,7 +701,7 @@ def verify_otp():
                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                 (data['fullname'], data['username'], data['email'], data['contact'],
                  data['city'], data['gender'], data['file_path'],
-                 data['id_file_path'], data['password'])
+                 data['id_file_path'], hashed_password)
             )
             db.commit()
             session.pop('otp', None)
@@ -721,9 +733,10 @@ def forgot_password():
 def reset_password():
     if request.method == 'POST':
         new_password = request.form.get('password')
+        hashed_password = generate_password_hash(new_password)
         email = session.get('reset_email')
         db, cursor = get_db()
-        cursor.execute("UPDATE userdata SET passwords=%s WHERE email=%s", (new_password, email))
+        cursor.execute("UPDATE userdata SET passwords=%s WHERE email=%s", (hashed_password, email))
         db.commit()
         flash("Password updated successfully")
         return redirect('/login')
