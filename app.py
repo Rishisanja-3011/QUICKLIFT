@@ -597,13 +597,18 @@ def google_callback():
         db, cursor = get_db()
         cursor.execute("SELECT * FROM userdata WHERE email=%s", (user_info['email'],))
         db_user = cursor.fetchone()
-        session['user'] = db_user if db_user else {
-            'username': user_info.get('email').split('@')[0],
-            'fullname': user_info.get('name'),
-            'email':    user_info.get('email'),
-            'is_google': True
-        }
-        return redirect('/dashboard')
+        if db_user:
+            # Existing user — log them in directly
+            session['user'] = db_user
+            return redirect('/dashboard')
+        else:
+            # New Google user — store info temporarily and redirect to registration
+            session['google_pending'] = {
+                'fullname': user_info.get('name', ''),
+                'email':    user_info.get('email', ''),
+            }
+            flash("Please complete your registration to get started.", "info")
+            return redirect('/register')
     return redirect('/login')
 
 # ── Login ─────────────────────────────────────────────────────
@@ -637,23 +642,42 @@ def login():
 # ── Register ──────────────────────────────────────────────────
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    google_info = session.get('google_pending')  # Will be set if coming from Google OAuth
+    is_google   = google_info is not None
+
     if request.method == 'POST':
-        fullname         = request.form.get('fullname')
+        # For Google users, pull locked fields from session to prevent tampering
+        if is_google:
+            fullname = google_info.get('fullname', '')
+            email    = google_info.get('email', '')
+        else:
+            fullname = request.form.get('fullname')
+            email    = request.form.get('email')
+
         username         = request.form.get('username')
-        email            = request.form.get('email')
         contact          = request.form.get('contact')
         city             = request.form.get('city')
-        password         = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
         gender           = request.form.get('gender')
         file             = request.files.get('file')        # profile photo
         id_file_obj      = request.files.get('id_file')     # ID proof
 
-        if not all([fullname, username, email, contact, city,
-                    password, confirm_password, gender, file, id_file_obj]):
-            return render_template('register.html', error="Please fill in all fields including photo and ID proof")
-        if password != confirm_password:
-            return render_template('register.html', error="Passwords do not match")
+        # Google users don't need a password
+        if is_google:
+            password = None
+            confirm_password = None
+            required_fields = [fullname, username, email, contact, city, gender, file, id_file_obj]
+        else:
+            password         = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            required_fields = [fullname, username, email, contact, city,
+                               password, confirm_password, gender, file, id_file_obj]
+
+        if not all(required_fields):
+            return render_template('register.html', error="Please fill in all fields including photo and ID proof",
+                                   google_info=google_info)
+        if not is_google and password != confirm_password:
+            return render_template('register.html', error="Passwords do not match",
+                                   google_info=google_info)
 
         # Save profile photo
         file_path = file.filename
@@ -666,7 +690,8 @@ def register():
         db, cursor = get_db()
         cursor.execute("SELECT * FROM userdata WHERE username=%s OR email=%s", (username, email))
         if cursor.fetchone():
-            return render_template("register.html", error="Username or email already exists")
+            return render_template("register.html", error="Username or email already exists",
+                                   google_info=google_info)
 
         session['register_data'] = {
             "fullname":     fullname,
@@ -677,14 +702,15 @@ def register():
             "gender":       gender,
             "file_path":    file_path,
             "id_file_path": id_file_path,
-            "password":     password
+            "password":     password,       # Will be None for Google users
+            "is_google":    is_google
         }
         otp = generate_otp()
         session['otp']      = otp
         session['otp_type'] = "register"
         send_otp_email(email, otp)
         return render_template("otp.html")
-    return render_template('register.html')
+    return render_template('register.html', google_info=google_info)
 
 # ── Verify OTP ────────────────────────────────────────────────
 @app.route('/verify-otp', methods=['POST'])
@@ -693,7 +719,14 @@ def verify_otp():
     if user_otp == session.get('otp'):
         if session.get('otp_type') == "register":
             data = session.get('register_data')
-            hashed_password = generate_password_hash(data['password'])
+            is_google_reg = data.get('is_google', False)
+
+            # Google users get a placeholder password hash (they log in via OAuth, never via password)
+            if is_google_reg:
+                hashed_password = generate_password_hash(os.urandom(32).hex())
+            else:
+                hashed_password = generate_password_hash(data['password'])
+
             db, cursor = get_db()
             cursor.execute(
                 """INSERT INTO userdata
@@ -704,11 +737,22 @@ def verify_otp():
                  data['id_file_path'], hashed_password)
             )
             db.commit()
+
+            # Clean up session
             session.pop('otp', None)
             session.pop('otp_type', None)
             session.pop('register_data', None)
-            flash("Registration successful. Please login.")
-            return redirect('/login')
+
+            if is_google_reg:
+                # Google user: log them in directly after registration
+                session.pop('google_pending', None)
+                cursor.execute("SELECT * FROM userdata WHERE email=%s", (data['email'],))
+                session['user'] = cursor.fetchone()
+                flash("Registration complete! Welcome to QuickLift.", "success")
+                return redirect('/dashboard')
+            else:
+                flash("Registration successful. Please login.")
+                return redirect('/login')
         elif session.get('otp_type') == "reset":
             return redirect('/reset-password')
     else:
